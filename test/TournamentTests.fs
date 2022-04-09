@@ -1,10 +1,10 @@
 module TournamentTests
 
 open System
-open Tournament.Tournament
 open Tournament
-open NUnit.Framework
+open Tournament.Tournament
 open Tournament.PairingGenerator
+open NUnit.Framework
 
 [<TestFixture>]
 type TestClass() =
@@ -141,19 +141,11 @@ type TestClass() =
         Assert.AreEqual("Alice", pairings.[1].Player2)
 
     [<Test>]
-    member this.``pairings cannot be set if player list is empty``() =
-        let tournament = createTestTournament 1 >>= pair (fun lis -> lis)
-
-        match tournament with
-        | Ok _ -> failwith "trying to create pairings with empty player list should fail"
-        | Error err -> Assert.AreEqual("Player list is empty", err)
-
-    [<Test>]
     member this.``on odd number of players, BYE is added to player list for pairings``() =
         let tournament =
             createTestTournament 1
             >>= addPlayer "Alice"
-            >>= pair (fun lis -> lis)
+            >>= pair swiss
             |> unwrap
 
         Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)
@@ -201,7 +193,7 @@ type TestClass() =
                              "Lily"
                              "Jack" ]
             >>= addRoundsWithPairings round1Pairings round2Pairings
-            >>= pair (fun lis -> swiss lis)
+            >>= pair swiss
             |> unwrap
 
         let round3Pairings = tournament.Rounds.[2].Pairings

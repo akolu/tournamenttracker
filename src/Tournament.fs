@@ -1,23 +1,7 @@
 namespace Tournament
 
-type Pairing =
-    { Number: int
-      Player1: string
-      Player2: string
-      Player1Score: int
-      Player2Score: int }
-
-type Round =
-    { Number: int
-      Pairings: List<Pairing>
-      Finished: bool }
-    member this.Standings =
-        this.Pairings
-        |> List.map (fun p ->
-            [ (p.Player1, p.Player1Score)
-              (p.Player2, p.Player2Score) ])
-        |> List.concat
-        |> Map.ofList
+open Pairing
+open Round
 
 type Tournament =
     { Rounds: List<Round>
@@ -51,7 +35,6 @@ type Tournament =
         |> List.fold (fun acc scores -> mergeMaps acc scores) players
 
 module Tournament =
-
     let (>>=) x f = Result.bind f x
 
     let private replace fn item list =
@@ -91,66 +74,31 @@ module Tournament =
         | Ok rnd -> Ok { tournament with Rounds = (tournament.Rounds |> replace ((=) rnd) (fn rnd)) }
         | Error err -> Error err
 
-    let private modifyPairing (modified: Pairing) (rnd: Round) =
-        { rnd with
-            Pairings =
-                (rnd.Pairings
-                 |> replace (fun p -> ((=) p.Number modified.Number)) modified) }
-
     let finishRound tournament =
         tournament
         |> modifyCurrentRound (fun round -> { round with Finished = true })
 
-    let private allocateToPairings (players: (string * int) list) : Pairing list =
-        let makePairing number p1 p2 =
-            { Number = number
-              Player1 = p1
-              Player2 = p2
-              Player1Score = 0
-              Player2Score = 0 }
-
-        players
-        |> List.chunkBySize 2
-        |> List.fold
-            (fun acc chunk ->
-                acc
-                @ [ makePairing (acc.Length) (fst chunk.[0]) (fst chunk.[1]) ])
-            []
 
     let pair (pairingFunc: (string * int) list -> (string * int) list) (tournament: Tournament) =
-        let oddNumberOfPlayers (list: 'a list) = (<>) ((%) list.Length 2) 0
+        let playerList =
+            match tournament.Players with
+            | list when (<>) ((%) list.Length 2) 0 -> tournament.Standings.Add("BYE", 0)
+            | _ -> tournament.Standings
 
-        let addPairings playersWithScores =
-            let playerList = pairingFunc (playersWithScores |> Map.toList)
+        tournament
+        |> modifyCurrentRound (fun round -> { round with Pairings = (addPairings pairingFunc playerList) })
 
-            tournament
-            |> modifyCurrentRound (fun r -> { r with Pairings = (allocateToPairings playerList) })
-
-        match tournament.Players with
-        | [] -> Error "Player list is empty"
-        | list when oddNumberOfPlayers list -> addPairings (tournament.Standings.Add("BYE", 0))
-        | _ -> addPairings tournament.Standings
 
     let score number result (tournament: Tournament) =
-        let addResults pairing round =
-            round
-            |> modifyPairing
-                { pairing with
-                    Player1Score = fst result
-                    Player2Score = snd result }
-
-        let pairing =
-            tournament.CurrentRound
-            >>= (fun r ->
-                match r.Pairings
-                      |> List.tryFind (fun p -> ((=) number p.Number))
-                    with
-                | Some pairing -> Ok pairing
-                | None -> Error(sprintf "Match %i not found!" number))
-
-        match pairing with
-        | Ok p -> tournament |> modifyCurrentRound (addResults p)
-        | Error err -> Error err
+        tournament.CurrentRound
+        >>= (fun r ->
+            match r.Pairings
+                  |> List.tryFind (fun p -> ((=) number p.Number))
+                with
+            | Some pairing ->
+                (tournament
+                 |> modifyCurrentRound (fun rnd -> (addResults pairing rnd result)))
+            | None -> Error(sprintf "Match %i not found!" number))
 
     let private swapPlayers p1 p2 pairing =
         let tryReplace =
