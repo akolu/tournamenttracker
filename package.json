@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "postinstall": "dotnet tool restore",
+    "start": "dotnet fable watch src -o dist",
+    "build": "dotnet fable src -o dist",
+    "test": "dotnet test test/TournamentTest.fsproj --logger 'console;verbosity=detailed'"
+  },
+  "version": "1.0.0"
+}
