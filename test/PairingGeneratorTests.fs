@@ -105,3 +105,21 @@ type TestClass() =
               (("James", 20), ("Jack", 10)) ],
             swissed
         )
+
+// [<Test>]
+// member this.``swiss test1``() =
+//     let history =
+//         [ ("Alice", "Bob")
+//           ("Lily", "Michael")
+//           ("James", "Jack")
+//           ("Alice", "Michael")
+//           ("Jack", "Lily")
+//           ("James", "Bob") ]
+
+//     let players =
+//         [ ("Alice", 30)
+//           ("Lily", 30)
+//           ("Jack", 21)
+//           ("Michael", 20)
+//           ("Bob", 10)
+//           ("James", 9) ]
