@@ -131,28 +131,27 @@ type TestClass() =
                              "Bob"
                              "James"
                              "Michael" ]
-            >>= pair (fun lis -> List.rev lis)
+            >>= pair PairingGenerator.Swiss
             |> unwrap
 
         let pairings = tournament.Rounds.[0].Pairings
-        Assert.AreEqual("Michael", pairings.[0].Player1)
-        Assert.AreEqual("James", pairings.[0].Player2)
-        Assert.AreEqual("Bob", pairings.[1].Player1)
-        Assert.AreEqual("Alice", pairings.[1].Player2)
+        Assert.AreEqual("Alice", pairings.[0].Player1)
+        Assert.AreEqual("Bob", pairings.[0].Player2)
+        Assert.AreEqual("James", pairings.[1].Player1)
+        Assert.AreEqual("Michael", pairings.[1].Player2)
 
     [<Test>]
     member this.``on odd number of players, BYE is added to player list for pairings``() =
         let tournament =
             createTestTournament 1
             >>= addPlayer "Alice"
-            >>= pair swiss
+            >>= pair PairingGenerator.Swiss
             |> unwrap
 
         Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)
         Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2)
 
     [<Test>]
-    [<Ignore("Fails...(wip)")>]
     member this.``players cannot face same opponent twice if unplayed opponent can be found``() =
         let addRoundsWithPairings round1Pairings round2Pairings tournament =
             Ok
@@ -193,13 +192,13 @@ type TestClass() =
                              "Lily"
                              "Jack" ]
             >>= addRoundsWithPairings round1Pairings round2Pairings
-            >>= pair swiss
+            >>= pair Swiss
             |> unwrap
 
         let round3Pairings = tournament.Rounds.[2].Pairings
         Assert.AreEqual(("Alice", "Lily"), round3Pairings.[0] |> playerNames)
-        Assert.AreEqual(("Michael", "Jack"), round3Pairings.[1] |> playerNames)
-        Assert.AreEqual(("James", "Bob"), round3Pairings.[2] |> playerNames)
+        Assert.AreEqual(("Michael", "Bob"), round3Pairings.[1] |> playerNames)
+        Assert.AreEqual(("James", "Jack"), round3Pairings.[2] |> playerNames)
 
     [<Test>]
     member this.``score can be set for pairing by table number``() =

@@ -34,6 +34,15 @@ type Tournament =
         |> List.map (fun r -> r.Standings)
         |> List.fold (fun acc scores -> mergeMaps acc scores) players
 
+    member this.MatchHistory =
+        this.Rounds
+        |> List.fold
+            (fun acc rnd ->
+                acc
+                @ (rnd.Pairings
+                   |> List.fold (fun pairs pairing -> pairs @ [ pairing.Player1, pairing.Player2 ]) []))
+            []
+
 module Tournament =
     let (>>=) x f = Result.bind f x
 
@@ -79,7 +88,13 @@ module Tournament =
         |> modifyCurrentRound (fun round -> { round with Finished = true })
 
 
-    let pair (pairingFunc: (string * int) list -> (string * int) list) (tournament: Tournament) =
+    let pair (alg: PairingGenerator.PairingAlgorithm) (tournament: Tournament) =
+
+        let pairingFunc =
+            match alg with
+            | PairingGenerator.Swiss -> PairingGenerator.swiss tournament.MatchHistory
+            | PairingGenerator.Shuffle -> PairingGenerator.shuffle
+
         let playerList =
             match tournament.Players with
             | list when (<>) ((%) list.Length 2) 0 -> tournament.Standings.Add("BYE", 0)
