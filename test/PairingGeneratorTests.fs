@@ -106,20 +106,30 @@ type TestClass() =
             swissed
         )
 
-// [<Test>]
-// member this.``swiss test1``() =
-//     let history =
-//         [ ("Alice", "Bob")
-//           ("Lily", "Michael")
-//           ("James", "Jack")
-//           ("Alice", "Michael")
-//           ("Jack", "Lily")
-//           ("James", "Bob") ]
+    [<Test>]
+    [<Ignore("WIP")>]
+    member this.``swiss can skip top pairing if it would cause the pairings to be impossible otherwise``() =
+        // assume that 3 more players existed for 2 rounds (which Alice, Lily & Michael played) before dropping out
+        // leaving history "incomplete" and creating a situation where the top pairing, Alice & Lily would be illegal
+        // since it would make it impossible to pair the rest of the players
+        let history =
+            [ ("Jack", "Bob")
+              ("James", "Jack")
+              ("Bob", "James") ]
 
-//     let players =
-//         [ ("Alice", 30)
-//           ("Lily", 30)
-//           ("Jack", 21)
-//           ("Michael", 20)
-//           ("Bob", 10)
-//           ("James", 9) ]
+        let players =
+            [ ("Alice", 6)
+              ("Lily", 5)
+              ("Jack", 4)
+              ("Michael", 3)
+              ("Bob", 2)
+              ("James", 1) ]
+
+        let swissed = players |> swiss history
+
+        Assert.AreEqual(
+            [ (("Alice", 6), ("Jack", 4))
+              (("Lily", 5), ("Bob", 2))
+              (("Michael", 3), ("James", 1)) ],
+            swissed
+        )

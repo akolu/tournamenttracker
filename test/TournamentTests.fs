@@ -290,34 +290,6 @@ type TestClass() =
         | Ok rnd -> failwith ("expected " + rnd.Finished.ToString())
         | Error err -> Assert.AreEqual("Tournament already finished", err)
 
-
-    // // standings before round 1:
-    // // Alice=0, Bob=0, Lily=0, Michael=0, James=0, Jack=0
-    // let round1Pairings =
-    //     [ table 1 ("Alice", "Bob") |> result (15, 5)
-    //       table 2 ("Lily", "Michael") |> result (7, 13)
-    //       table 3 ("James", "Jack") |> result (9, 11) ]
-
-    // // standings before round 2:
-    // // Alice 15, Michael=13, Jack=11, James=9, Lily=7, Bob=5
-    // let round2Pairings =
-    //     [ table 1 ("Alice", "Michael") |> result (20, 0)
-    //       table 2 ("Jack", "Lily") |> result (4, 16)
-    //       table 3 ("James", "Bob") |> result (9, 11) ]
-
-    // //  standings before round 3:
-    // //  Alice=35, Lily=23, James=18, Bob=16, Jack=15, Michael=13
-    // let round3Pairings =
-    //     [ table 1 ("Alice", "Lily") |> result (20, 0)
-    //       table 2 ("James", "Michael") |> result (9, 11)
-    //       table 3 ("Bob", "Jack") |> result (10, 10) ]
-
-    // //  standings before round 4
-    // //  Alice=55, James=27, Bob=26, Jack=25, Michael=24, Lily=23
-    // Assert.AreEqual(("Alice", "James"), round3Pairings.[0] |> playerNames)
-    // Assert.AreEqual(("Bob", "Lily"), round3Pairings.[1] |> playerNames)
-    // Assert.AreEqual(("Michael", "Jack"), round3Pairings.[2] |> playerNames)
-
     [<Test>]
     member this.``score can be set for pairing by table number``() =
         let unscored =
