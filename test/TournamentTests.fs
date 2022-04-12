@@ -156,16 +156,14 @@ type TestClass() =
         Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2)
 
     [<Test>]
-    member this.``players cannot face same opponent twice if unplayed opponent can be found``() =
+    member this.``tournament can be run successfully from start to finish ensuring unique pairings each round``() =
         let getPairings (tournament: Tournament) =
             (unwrap tournament.CurrentRound).Pairings
             |> List.map playerNames
 
-        let getStandings (tournament: Tournament) = tournament.Standings |> Map.toList
-
         // ROUND 1 PAIRINGS
         let round1 =
-            createTestTournament 5
+            createTestTournament 4
             >>= addPlayers [ "Alice"
                              "Bob"
                              "Jack"
@@ -183,16 +181,13 @@ type TestClass() =
         )
 
         // ROUND 1 SCORES
-        let round1Scores =
+        let round1Finished =
             round1
             |> score 0 (15, 5) // Alice 15, Bob 5
             >>= score 1 (11, 9) // Jack 11, James 9
             >>= score 2 (7, 13) // Lily 7, Michael 13
             >>= finishRound
             |> unwrap
-
-        (getStandings round1Scores)
-        |> List.iter (fun i -> System.Console.WriteLine(i))
 
         CollectionAssert.AreEqual(
             [ ("Alice", 15)
@@ -201,57 +196,100 @@ type TestClass() =
               ("James", 9)
               ("Lily", 7)
               ("Bob", 5) ],
-            getStandings round1Scores
+            round1Finished.Standings
         )
 
+        // ROUND 2 PAIRINGS
+        let round2 = round1Finished |> pair Swiss |> unwrap
 
-    // // ROUND 2
-    // let round2 =
-    //     round1
-    //     |> score 1 (15, 5) // Alice 15, Bob 5
-    //     >>= score 2 (11, 9) // Jack 11, James 9
-    //     >>= score 3 (7, 13) // Lily 7, Michael 13
-    //     >>= finishRound
-    //     >>= pair Swiss
-    //     |> unwrap
+        CollectionAssert.AreEqual(
+            [ ("Alice", "Michael")
+              ("Jack", "Lily") // Jack has already played James -> Lily is next eligible opponent
+              ("James", "Bob") ],
+            getPairings round2
+        )
 
-    // CollectionAssert.AreEqual(
-    //     [ ("Alice", "Bob")
-    //       ("Jack", "Lily") // Jack has already played James -> Lily is next eligible opponent
-    //       ("Lily", "Michael") ],
-    //     getPairings round2
-    // )
+        // ROUND 2 RESULTS
+        let round2Finished =
+            round2
+            |> score 0 (20, 0) // Alice 20, Michael 0
+            >>= score 1 (4, 16) // Jack 4, Lily 16
+            >>= score 2 (9, 11) // James 9, Bob 11
+            >>= finishRound
+            |> unwrap
 
+        CollectionAssert.AreEqual(
+            [ ("Alice", 35)
+              ("Lily", 23)
+              ("James", 18)
+              ("Bob", 16)
+              ("Jack", 15)
+              ("Michael", 13) ],
+            round2Finished.Standings
+        )
 
-    // >>= addRound1Results [ table 1 ("Alice", "Bob") |> result (15, 5)
-    //                        table 2 ("Lily", "Michael") |> result (7, 13)
-    //                        table 3 ("James", "Jack") |> result (9, 11) ]
-    // >>= finishRound
+        // ROUND 3 PAIRINGS
+        let round3 = round2Finished |> pair Swiss |> unwrap
 
-    // standings before round 2:
-    // Alice 15, Michael=13, Jack=11, James=9, Lily=7, Bob=5
-    // let round2 = round1 >>= pair Swiss |> unwrap
+        CollectionAssert.AreEqual(
+            [ ("Alice", "Lily")
+              ("James", "Michael") // James has already played Jack & Bob -> Michael is the only eligible opponent
+              ("Bob", "Jack") ],
+            getPairings round3
+        )
 
-    // Assert.AreEqual(
-    //     [ ("Alice", "Michael")
-    //       ("Jack", "Lily") // Jack has already played James -> Lily is next eligible opponent
-    //       ("James", "Bob") ],
-    //     getPairings round2
-    // )
+        // ROUND 3 RESULTS
+        let round3Finished =
+            round3
+            |> score 0 (20, 0) // Alice 20, Lily 0
+            >>= score 1 (9, 11) // James 9, Michael 11
+            >>= score 2 (10, 10) // Bob 10, Jack 10
+            >>= finishRound
+            |> unwrap
 
-    // let addRoundsWithPairings round1Pairings round2Pairings tournament =
-    //     Ok
-    //         { tournament with
-    //             Rounds =
-    //                 [ { Number = 1
-    //                     Pairings = round1Pairings
-    //                     Finished = true }
-    //                   { Number = 2
-    //                     Pairings = round2Pairings
-    //                     Finished = true }
-    //                   { Number = 3
-    //                     Pairings = []
-    //                     Finished = false } ] }
+        CollectionAssert.AreEqual(
+            [ ("Alice", 55)
+              ("James", 27)
+              ("Bob", 26)
+              ("Jack", 25)
+              ("Michael", 24)
+              ("Lily", 23) ],
+            round3Finished.Standings
+        )
+
+        // ROUND 4 PAIRINGS
+        let round4 = round3Finished |> pair Swiss |> unwrap
+
+        CollectionAssert.AreEqual(
+            [ ("Alice", "James")
+              ("Bob", "Lily") // Bob has already played Jack and the next opponent, Michael, would leave Jack & Lily for last, who have already played -> Lily is the only eligible opponent
+              ("Jack", "Michael") ],
+            getPairings round4
+        )
+
+        // ROUND 4 RESULTS
+        let round4Finished =
+            round4
+            |> score 0 (3, 17) // Alice 3, James 17
+            >>= score 1 (9, 11) // Bob 9, Lily 11
+            >>= score 2 (15, 5) // Jack 15, Michael 5
+            >>= finishRound
+            |> unwrap
+
+        CollectionAssert.AreEqual(
+            [ ("Alice", 58)
+              ("James", 44)
+              ("Jack", 40)
+              ("Bob", 35)
+              ("Lily", 34)
+              ("Michael", 29) ],
+            round4Finished.Standings
+        )
+
+        match round4Finished.CurrentRound with
+        | Ok rnd -> failwith ("expected " + rnd.Finished.ToString())
+        | Error err -> Assert.AreEqual("Tournament already finished", err)
+
 
     // // standings before round 1:
     // // Alice=0, Bob=0, Lily=0, Michael=0, James=0, Jack=0
@@ -275,22 +313,10 @@ type TestClass() =
     //       table 3 ("Bob", "Jack") |> result (10, 10) ]
 
     // //  standings before round 4
-    // //  Alice=55, James=27, Bob=26, Michael=24, Jack=25, Lily=23
+    // //  Alice=55, James=27, Bob=26, Jack=25, Michael=24, Lily=23
     // Assert.AreEqual(("Alice", "James"), round3Pairings.[0] |> playerNames)
     // Assert.AreEqual(("Bob", "Lily"), round3Pairings.[1] |> playerNames)
     // Assert.AreEqual(("Michael", "Jack"), round3Pairings.[2] |> playerNames)
-
-    // let tournament =
-    //     createTestTournament 1
-    //     >>= addPlayers [ "Alice"
-    //                      "Bob"
-    //                      "James"
-    //                      "Michael"
-    //                      "Lily"
-    //                      "Jack" ]
-    //     >>= addRoundsWithPairings round1Pairings round2Pairings round3Pairings
-    //     >>= pair Swiss
-    //     |> unwrap
 
     [<Test>]
     member this.``score can be set for pairing by table number``() =

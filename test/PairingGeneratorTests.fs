@@ -39,7 +39,7 @@ type TestClass() =
         CollectionAssert.Contains(playersFromShuffledList, ("Michael", 17))
 
     [<Test>]
-    member this.``swiss2 orders player list by score with higher ranking player being player 1``() =
+    member this.``swiss orders player list by score with higher ranking player being player 1``() =
         let swissed = players |> swiss []
 
         Assert.AreEqual(
@@ -64,7 +64,7 @@ type TestClass() =
         )
 
     [<Test>]
-    member this.``swiss2 finds next unplayed opponent from the top if players would end up facing each other again``() =
+    member this.``swiss finds next unplayed opponent from the top if players would end up facing each other again``() =
         let history =
             [ ("James", "Alice")
               ("Bob", "Michael") ]

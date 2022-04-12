@@ -33,8 +33,8 @@ type Tournament =
         this.Rounds
         |> List.map (fun r -> r.Standings)
         |> List.fold (fun acc scores -> mergeMaps acc scores) players
-        // |> Map.toList
-        // |> List.sortBy (fun (_, score) -> -score)
+        |> Map.toList
+        |> List.sortBy (fun (_, score) -> -score)
 
     member this.MatchHistory =
         this.Rounds
@@ -97,13 +97,8 @@ module Tournament =
             | PairingGenerator.Swiss -> PairingGenerator.swiss tournament.MatchHistory
             | PairingGenerator.Shuffle -> PairingGenerator.shuffle
 
-        let playerList =
-            match tournament.Players with
-            | list when (<>) ((%) list.Length 2) 0 -> tournament.Standings.Add("BYE", 0)
-            | _ -> tournament.Standings
-
         tournament
-        |> modifyCurrentRound (fun round -> { round with Pairings = (addPairings pairingFunc playerList) })
+        |> modifyCurrentRound (fun round -> { round with Pairings = (addPairings pairingFunc tournament.Standings) })
 
 
     let score number result (tournament: Tournament) =

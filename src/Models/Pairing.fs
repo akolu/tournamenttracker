@@ -19,7 +19,11 @@ module Pairing =
 
     let internal addPairings
         (pairingFunc: (string * int) list -> ((string * int) * (string * int)) list)
-        (standings: Map<string, int>)
+        (standings: List<string * int>)
         : List<Pairing> =
-        (pairingFunc (standings |> Map.toList))
-        |> playerPairsToPairings
+        let playerList =
+            match standings with
+            | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", 0) ]
+            | _ -> standings
+
+        (pairingFunc playerList) |> playerPairsToPairings
