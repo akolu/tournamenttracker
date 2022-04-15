@@ -7,7 +7,7 @@ type Pairing =
       Player1Score: int
       Player2Score: int }
 
-module Pairing =
+module internal Pairing =
     let private playerPairsToPairings (pairs: ((string * int) * (string * int)) list) : Pairing list =
         pairs
         |> List.mapi (fun i ((p1Name, _), (p2Name, _)) ->
@@ -17,7 +17,7 @@ module Pairing =
               Player1Score = 0
               Player2Score = 0 })
 
-    let internal addPairings
+    let addPairings
         (pairingFunc: (string * int) list -> ((string * int) * (string * int)) list)
         (standings: List<string * int>)
         : List<Pairing> =

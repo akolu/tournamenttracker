@@ -6,14 +6,17 @@ open Round
 type Tournament =
     { Rounds: List<Round>
       Players: List<string> }
-    member this.CurrentRound =
-        let ongoing =
-            this.Rounds
-            |> List.tryFind (fun round -> (=) round.Finished false)
+    member internal this.CurrentRound =
+        let ongoing = List.tryFind (fun rnd -> rnd.Status <> Finished) this.Rounds
 
         match ongoing with
         | Some rnd -> Ok rnd
         | None -> Error "Tournament already finished"
+
+    member this.Pairings: List<Pairing> =
+        match this.CurrentRound with
+        | Ok rnd -> rnd.Pairings
+        | Error _ -> (List.rev this.Rounds).Head.Pairings
 
     member this.Standings =
         let mergeMaps map1 map2 =
@@ -56,7 +59,7 @@ module Tournament =
         let defaultRound index =
             { Number = (+) index 1
               Pairings = []
-              Finished = false }
+              Status = Pregame }
 
         match rounds with
         | n when n > 0 ->
@@ -65,7 +68,7 @@ module Tournament =
                   Players = [] }
         | _ -> Error "Tournament should have at least one round"
 
-    let addPlayer player tournament =
+    let private addPlayer player tournament =
         let existing =
             tournament.Players
             |> List.tryFind (fun p -> (=) player p)
@@ -85,32 +88,44 @@ module Tournament =
         | Ok rnd -> Ok { tournament with Rounds = (tournament.Rounds |> replace ((=) rnd) (fn rnd)) }
         | Error err -> Error err
 
-    let finishRound tournament =
-        tournament
-        |> modifyCurrentRound (fun round -> { round with Finished = true })
+    let private modifyCurrentRound2 (modified: Result<Round, string>) (tournament: Tournament) =
+        match (tournament.CurrentRound, modified) with
+        | (Ok rnd, Ok modified) -> Ok { tournament with Rounds = (tournament.Rounds |> replace ((=) rnd) modified) }
+        | (Error err, _) -> Error err
+        | (_, Error err) -> Error err
 
+    let startRound (tournament: Tournament) =
+        match tournament.CurrentRound with
+        | Ok rnd -> modifyCurrentRound2 (start rnd) tournament
+        | Error err -> Error err
+
+    let finishRound (tournament: Tournament) =
+        match tournament.CurrentRound with
+        | Ok rnd when rnd.Status = Ongoing -> modifyCurrentRound (fun rnd -> { rnd with Status = Finished }) tournament
+        | Ok rnd -> Error(sprintf "Unable to finish round %i: round not started" rnd.Number)
+        | Error err -> Error err
+
+    let private pairingFunc alg (tournament: Tournament) =
+        match alg with
+        | PairingGenerator.Swiss -> PairingGenerator.swiss tournament.MatchHistory
+        | PairingGenerator.Shuffle -> PairingGenerator.shuffle
 
     let pair (alg: PairingGenerator.PairingAlgorithm) (tournament: Tournament) =
-
-        let pairingFunc =
-            match alg with
-            | PairingGenerator.Swiss -> PairingGenerator.swiss tournament.MatchHistory
-            | PairingGenerator.Shuffle -> PairingGenerator.shuffle
-
-        tournament
-        |> modifyCurrentRound (fun round -> { round with Pairings = (addPairings pairingFunc tournament.Standings) })
-
+        match tournament.CurrentRound with
+        | Ok rnd when rnd.Status = Pregame ->
+            let pairings = (addPairings (pairingFunc alg tournament) tournament.Standings)
+            modifyCurrentRound (fun rnd -> { rnd with Pairings = pairings }) tournament
+        | Ok rnd -> Error(sprintf "Unable to pair: round %i already started" rnd.Number)
+        | Error err -> Error err
 
     let score number result (tournament: Tournament) =
-        tournament.CurrentRound
-        >>= (fun r ->
-            match r.Pairings
-                  |> List.tryFind (fun p -> ((=) number p.Number))
-                with
-            | Some pairing ->
-                (tournament
-                 |> modifyCurrentRound (fun rnd -> (addResults pairing rnd result)))
-            | None -> Error(sprintf "Match %i not found!" number))
+        match tournament.CurrentRound with
+        | Ok rnd when rnd.Status = Ongoing ->
+            match (List.tryFind (fun (p: Pairing) -> number = p.Number) rnd.Pairings) with
+            | Some pairing -> modifyCurrentRound (addResults pairing result) tournament
+            | None -> Error(sprintf "Match %i not found!" number)
+        | Ok rnd -> Error(sprintf "Unable to score: round %i not started" rnd.Number)
+        | Error err -> Error err
 
     let private swapPlayers p1 p2 pairing =
         let tryReplace =
@@ -133,23 +148,14 @@ module Tournament =
             ((=) player pairing.Player1)
             || ((=) player pairing.Player2)
 
-        match round.Pairings |> List.tryFind (exists player) with
-        | Some pairing -> round |> verifyUnscored pairing
+        match List.tryFind (exists player) round.Pairings with
+        | Some pairing -> verifyUnscored pairing round
         | None -> Error(sprintf "Player %s not found" player)
 
     let swap player1 player2 (tournament: Tournament) =
-        let pairings =
-            tournament.CurrentRound
-            >>= validatePlayerSwap player1
-            >>= validatePlayerSwap player2
-            >>= (fun round ->
-                Ok(
-                    round.Pairings
-                    |> List.map (swapPlayers player1 player2)
-                ))
-
-        match (pairings) with
-        | Ok pairings ->
-            tournament
-            |> modifyCurrentRound (fun rnd -> { rnd with Pairings = pairings })
-        | Error err -> Error err
+        tournament.CurrentRound
+        >>= validatePlayerSwap player1
+        >>= validatePlayerSwap player2
+        >>= (fun rnd ->
+            let pairings = List.map (swapPlayers player1 player2) rnd.Pairings
+            modifyCurrentRound (fun rnd -> { rnd with Pairings = pairings }) tournament)
