@@ -43,4 +43,9 @@ module internal Round =
         | Ongoing -> Error(sprintf "Unable to start round %i: round already started" rnd.Number)
         | Finished -> Error(sprintf "Unable to start round %i: round already finished" rnd.Number)
 
-// let finishRound (rnd: Round) =
+    let finish (rnd: Round) =
+        match rnd.Status with
+        | Pregame -> Error(sprintf "Unable to finish round %i: round not started" rnd.Number)
+        | Ongoing when Seq.forall (fun (p: Pairing) -> p.IsScored) rnd.Pairings -> Ok { rnd with Status = Finished }
+        | Ongoing -> Error(sprintf "Unable to finish round %i: unscored pairings exist" rnd.Number)
+        | Finished -> Error(sprintf "Unable to finish round %i: round already finished" rnd.Number)

@@ -101,8 +101,7 @@ module Tournament =
 
     let finishRound (tournament: Tournament) =
         match tournament.CurrentRound with
-        | Ok rnd when rnd.Status = Ongoing -> modifyCurrentRound (fun rnd -> { rnd with Status = Finished }) tournament
-        | Ok rnd -> Error(sprintf "Unable to finish round %i: round not started" rnd.Number)
+        | Ok rnd -> modifyCurrentRound2 (finish rnd) tournament
         | Error err -> Error err
 
     let private pairingFunc alg (tournament: Tournament) =

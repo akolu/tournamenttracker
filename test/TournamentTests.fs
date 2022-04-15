@@ -185,18 +185,33 @@ type TestClass() =
 
     [<Test>]
     [<Category("finishRound")>]
-    member this.``current round cannot be finished tournament is already finished``() =
+    member this.``current round cannot be finished if tournament is already finished``() =
+        let tournament =
+            createTournament 1
+            >>= addPlayers [ "Alice"; "Bob" ]
+            >>= pair Shuffle
+            >>= startRound
+            >>= score 0 (10, 10)
+            >>= finishRound
+            >>= finishRound
+
+        match tournament with
+        | Ok _ -> failwith "Did not throw"
+        | Error err -> Assert.AreEqual(err, "Tournament already finished")
+
+    [<Test>]
+    [<Category("finishRound")>]
+    member this.``current round cannot be finished if unscored pairings exist``() =
         let tournament =
             createTournament 1
             >>= addPlayers [ "Alice"; "Bob" ]
             >>= pair Shuffle
             >>= startRound
             >>= finishRound
-            >>= finishRound
 
         match tournament with
-        | Ok _ -> failwith "Trying to finish already finished round should not succeed"
-        | Error err -> Assert.AreEqual(err, "Tournament already finished")
+        | Ok _ -> failwith "Did not throw"
+        | Error err -> Assert.AreEqual(err, "Unable to finish round 1: unscored pairings exist")
 
     [<Test>]
     [<Category("pair")>]
@@ -289,8 +304,9 @@ type TestClass() =
               >>= addPlayers [ "Alice"; "Bob" ]
               >>= pair Shuffle
               >>= startRound
+              >>= score 0 (10, 10)
               >>= finishRound
-              >>= score 123 (10, 10)
+              >>= score 0 (11, 9)
             with
         | Ok _ -> failwith "Did not throw"
         | Error err -> Assert.AreEqual("Tournament already finished", err)
