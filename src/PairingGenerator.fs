@@ -14,6 +14,7 @@ module PairingGenerator =
         |> List.fold (fun acc chunk -> acc @ [ (chunk.[0], chunk.[1]) ]) []
 
     type Pair<'a> = { P1: 'a; P2: 'a; Priority: int }
+    type Pairings<'a> = List<Pair<'a * int>>
 
     let private getPairingMatrix (history: ('a * 'a) list) (players: ('a * int) list) =
         let playersHavePlayed (p1: 'a) (p2: 'a) =
@@ -50,13 +51,14 @@ module PairingGenerator =
         |> List.fold (fun acc cur -> acc @ cur) []
         |> List.sortBy (fun pair -> pair.Priority)
 
-    let private getNextAvailablePairing (unpaired: List<Pair<'a * int>>) (blacklist: List<Pair<'a * int>>) =
-        List.tryFind (fun pair -> not (List.exists (fun item -> (item = pair)) blacklist)) unpaired
+    let private getNextAvailablePairing
+        (paired: Pairings<'a>)
+        (unpaired: Pairings<'a>)
+        (blacklist: List<Pairings<'a>>)
+        : option<Pair<'a * int>> =
+        List.tryFind (fun pair -> not (List.exists (fun list -> (list = (paired @ [ pair ]))) blacklist)) unpaired
 
-    let private filterPossiblePairings
-        (paired: List<Pair<'a * int>>)
-        (unpaired: List<Pair<'a * int>>)
-        : List<Pair<'a * int>> =
+    let private filterPossiblePairings (paired: Pairings<'a>) (unpaired: Pairings<'a>) : Pairings<'a> =
         unpaired
         |> List.filter (fun pair1 ->
             not (
@@ -77,12 +79,12 @@ module PairingGenerator =
                 players
 
         let rec getPairings
-            (paired: List<Pair<'a * int>>)
-            (blacklist: List<Pair<'a * int>>)
-            (unpaired: List<Pair<'a * int>>)
-            : List<Pair<'a * int>> =
+            (paired: Pairings<'a>)
+            (blacklist: List<Pairings<'a>>)
+            (unpaired: Pairings<'a>)
+            : Pairings<'a> =
             // TODO: move blacklist check from getNextAvailablePairing to filterPossiblePairings
-            match (getNextAvailablePairing unpaired blacklist) with
+            match (getNextAvailablePairing paired unpaired blacklist) with
             | Some next ->
                 getPairings (paired @ [ next ]) blacklist (filterPossiblePairings (paired @ [ next ]) unpaired)
             | None ->
@@ -94,7 +96,7 @@ module PairingGenerator =
                         // TODO: find out better blacklist utilization (e.g. by blacklisting the whole pairing list instead of an individual pairing)
                         // this will likely not work in all circumstances if blacklisting a pairing earlier in the tree makes a previously blacklisted
                         // pairing "allowed" again
-                        (blacklist @ [ List.last paired ])
+                        (blacklist @ [ paired ])
                         (filterPossiblePairings (paired |> List.except [ (List.last paired) ]) pairingMatrix)
 
         pairingMatrix
