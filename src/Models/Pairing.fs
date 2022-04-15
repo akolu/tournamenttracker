@@ -8,15 +8,6 @@ type Pairing =
       Player2Score: int }
 
 module Pairing =
-    // let private allocateToPairings (players: ((string * int) * (string * int)) list)) : Pairing list =
-    //     let makePairing number (p1, p2) =
-    //         { Number = number
-    //           Player1 = p1
-    //           Player2 = p2
-    //           Player1Score = 0
-    //           Player2Score = 0 }
-    //     players |> List.mapi (fun index (p1, p2) -> makePairing index pairing )
-
     let private playerPairsToPairings (pairs: ((string * int) * (string * int)) list) : Pairing list =
         pairs
         |> List.mapi (fun i ((p1Name, _), (p2Name, _)) ->
@@ -28,7 +19,11 @@ module Pairing =
 
     let internal addPairings
         (pairingFunc: (string * int) list -> ((string * int) * (string * int)) list)
-        (standings: Map<string, int>)
+        (standings: List<string * int>)
         : List<Pairing> =
-        (pairingFunc (standings |> Map.toList))
-        |> playerPairsToPairings
+        let playerList =
+            match standings with
+            | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", 0) ]
+            | _ -> standings
+
+        (pairingFunc playerList) |> playerPairsToPairings

@@ -3,6 +3,7 @@ namespace Tournament
 type Round =
     { Number: int
       Pairings: List<Pairing>
+      // TODO: consider adding startRound member function to Tournament and enumerate round state with PREGAME / ONGOING / FINISHED
       Finished: bool }
     member this.Standings =
         this.Pairings

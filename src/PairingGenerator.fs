@@ -92,7 +92,8 @@ module PairingGenerator =
                     getPairings
                         (paired |> List.except [ (List.last paired) ])
                         // TODO: find out better blacklist utilization (e.g. by blacklisting the whole pairing list instead of an individual pairing)
-                        // this will likely not work in all circumstances
+                        // this will likely not work in all circumstances if blacklisting a pairing earlier in the tree makes a previously blacklisted
+                        // pairing "allowed" again
                         (blacklist @ [ List.last paired ])
                         (filterPossiblePairings (paired |> List.except [ (List.last paired) ]) pairingMatrix)
 

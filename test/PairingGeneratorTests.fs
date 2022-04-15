@@ -39,7 +39,7 @@ type TestClass() =
         CollectionAssert.Contains(playersFromShuffledList, ("Michael", 17))
 
     [<Test>]
-    member this.``swiss2 orders player list by score with higher ranking player being player 1``() =
+    member this.``swiss orders player list by score with higher ranking player being player 1``() =
         let swissed = players |> swiss []
 
         Assert.AreEqual(
@@ -64,7 +64,7 @@ type TestClass() =
         )
 
     [<Test>]
-    member this.``swiss2 finds next unplayed opponent from the top if players would end up facing each other again``() =
+    member this.``swiss finds next unplayed opponent from the top if players would end up facing each other again``() =
         let history =
             [ ("James", "Alice")
               ("Bob", "Michael") ]
@@ -103,5 +103,33 @@ type TestClass() =
             [ (("Alice", 30), ("Lily", 30))
               (("Michael", 21), ("Bob", 9))
               (("James", 20), ("Jack", 10)) ],
+            swissed
+        )
+
+    [<Test>]
+    [<Ignore("WIP")>]
+    member this.``swiss can skip top pairing if it would cause the pairings to be impossible otherwise``() =
+        // assume that 3 more players existed for 2 rounds (which Alice, Lily & Michael played) before dropping out
+        // leaving history "incomplete" and creating a situation where the top pairing, Alice & Lily would be illegal
+        // since it would make it impossible to pair the rest of the players
+        let history =
+            [ ("Jack", "Bob")
+              ("James", "Jack")
+              ("Bob", "James") ]
+
+        let players =
+            [ ("Alice", 6)
+              ("Lily", 5)
+              ("Jack", 4)
+              ("Michael", 3)
+              ("Bob", 2)
+              ("James", 1) ]
+
+        let swissed = players |> swiss history
+
+        Assert.AreEqual(
+            [ (("Alice", 6), ("Jack", 4))
+              (("Lily", 5), ("Bob", 2))
+              (("Michael", 3), ("James", 1)) ],
             swissed
         )
