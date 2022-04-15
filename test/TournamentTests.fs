@@ -1,9 +1,11 @@
 module TournamentTests
 
 open System
-open Tournament
 open Tournament.Tournament
 open Tournament.PairingGenerator
+open Tournament.Round
+open Tournament.Pairing
+open Tournament.Utils
 open NUnit.Framework
 
 [<TestFixture>]
@@ -222,7 +224,7 @@ type TestClass() =
                              "Bob"
                              "James"
                              "Michael" ]
-            >>= pair PairingGenerator.Swiss
+            >>= pair Swiss
             |> unwrap
 
         let pairings = tournament.Rounds.[0].Pairings
@@ -237,7 +239,7 @@ type TestClass() =
         let tournament =
             createTournament 1
             >>= addPlayers [ "Alice" ]
-            >>= pair PairingGenerator.Swiss
+            >>= pair Swiss
             |> unwrap
 
         Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)

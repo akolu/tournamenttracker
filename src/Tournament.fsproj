@@ -3,8 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Models/Pairing.fs" />
-    <Compile Include="Models/Round.fs" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="Pairing.fs" />
+    <Compile Include="Round.fs" />
     <Compile Include="PairingGenerator.fs" />
     <Compile Include="Tournament.fs" />
   </ItemGroup>
