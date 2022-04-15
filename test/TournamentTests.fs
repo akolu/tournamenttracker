@@ -419,20 +419,21 @@ type TestClass() =
     [<Test>]
     [<Category("swap")>]
     member this.``swap changes places of two players in current round``() =
-        let rounds =
-            [ { Number = 1
-                Status = Pregame
-                Pairings =
-                  [ table 1 ("Alice", "Bob")
-                    table 2 ("James", "Michael") ] } ]
-
         let tournament =
-            { (createTournament 1 |> unwrap) with Rounds = rounds }
-            |> swap "Bob" "Michael"
+            createTournament 1
+            >>= addPlayers [ "Alice"
+                             "Bob"
+                             "James"
+                             "Michael" ]
+            >>= pair Swiss
+            >>= swap "Bob" "Michael"
             |> unwrap
 
-        Assert.AreEqual(table 1 ("Alice", "Michael"), tournament.Rounds.[0].Pairings.[0])
-        Assert.AreEqual(table 2 ("James", "Bob"), tournament.Rounds.[0].Pairings.[1])
+        CollectionAssert.AreEqual(
+            [ ("Alice", "Michael")
+              ("James", "Bob") ],
+            pairings tournament
+        )
 
     [<Test>]
     [<Category("swap")>]
