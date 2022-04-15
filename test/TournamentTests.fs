@@ -395,12 +395,10 @@ type TestClass() =
         let tournament = { (createTestTournament 2 |> unwrap) with Rounds = rounds }
 
         CollectionAssert.AreEqual(
-            Map.ofList (
-                [ ("Michael", 32)
-                  ("Alice", 19)
-                  ("Bob", 18)
-                  ("James", 11) ]
-            ),
+            [ ("Michael", 32)
+              ("Alice", 19)
+              ("Bob", 18)
+              ("James", 11) ],
             tournament.Standings
         )
 
@@ -420,12 +418,10 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            Map.ofList (
-                [ ("Alice", 0)
-                  ("Bob", 0)
-                  ("James", 0)
-                  ("Michael", 0) ]
-            ),
+            [ ("Alice", 0)
+              ("Bob", 0)
+              ("James", 0)
+              ("Michael", 0) ],
             tournament.Standings
         )
 

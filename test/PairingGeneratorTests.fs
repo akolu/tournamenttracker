@@ -107,7 +107,6 @@ type TestClass() =
         )
 
     [<Test>]
-    [<Ignore("WIP")>]
     member this.``swiss can skip top pairing if it would cause the pairings to be impossible otherwise``() =
         // assume that 3 more players existed for 2 rounds (which Alice, Lily & Michael played) before dropping out
         // leaving history "incomplete" and creating a situation where the top pairing, Alice & Lily would be illegal
