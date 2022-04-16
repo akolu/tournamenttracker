@@ -4,6 +4,7 @@
 bundle.js
 temp/**
 dist/
+build/
 src/bin/
 src/obj/
 test/bin/
