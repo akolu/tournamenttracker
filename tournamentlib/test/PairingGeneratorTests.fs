@@ -7,11 +7,6 @@ open NUnit.Framework
 [<TestFixture>]
 type TestClass() =
 
-    let unwrap res =
-        match res with
-        | Ok res -> res
-        | Error err -> raise (Exception(err.ToString()))
-
     let players =
         [ ("Alice", 28)
           ("Bob", 14)

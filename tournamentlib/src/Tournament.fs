@@ -5,14 +5,6 @@ open Utils
 open Tournament.PairingGenerator
 open Tournament.Pairing
 
-#if FABLE_COMPILER
-open Thoth.Json
-#else
-open Thoth.Json.Net
-#endif
-
-type Kissa = { Name: string; Age: int }
-
 type Tournament =
     { Rounds: List<Round>
       Players: List<string> }
@@ -97,44 +89,3 @@ let score number result (tournament: Tournament) =
 
 let swap player1 player2 (tournament: Tournament) =
     tournament.ModifyCurrentRound(swapPlayers player1 player2)
-
-let private unwrap res =
-    match res with
-    | Ok res -> res
-    | Error err -> raise (System.Exception(err.ToString()))
-
-let private serialize (tournament: Result<Tournament, string>) =
-    Encode.Auto.toString (0, (tournament |> unwrap), CamelCase)
-
-let private parse str =
-    Decode.Auto.fromString<Tournament> (str, CamelCase)
-    |> unwrap
-
-let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) tournament =
-    parse tournament |> fn |> serialize
-
-let createTournamentJson rounds = createTournament rounds |> serialize
-
-let addPlayersJson players tournament =
-    wrapSerialize (addPlayers (players |> Array.toList)) tournament
-
-let private parseAlg alg =
-    match alg with
-    | "Swiss"
-    | "swiss" -> Swiss
-    | "Shuffle"
-    | "shuffle" -> Shuffle
-    | _ -> raise (System.Exception(sprintf "Invalid pairing algorithm: %s" alg))
-
-let pairJson alg tournament =
-    wrapSerialize (pair (parseAlg alg)) tournament
-
-let startRoundJson tournament = wrapSerialize startRound tournament
-
-let finishRoundJson tournament = wrapSerialize finishRound tournament
-
-let scoreJson number result tournament =
-    wrapSerialize (score number result) tournament
-
-let swapJson player1 player2 tournament =
-    wrapSerialize (swap player1 player2) tournament

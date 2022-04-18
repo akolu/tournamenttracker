@@ -1,8 +1,7 @@
 module TournamentTracker.Test
 
 open Fable.Jester
-open Tournament
-open Tournament.Tournament
+open TournamentTracker
 
 Jest.describe (
     "TournamentTracker tests",
@@ -10,7 +9,7 @@ Jest.describe (
         Jest.test (
             "can create tournament",
             (fun () ->
-                let tournament = createTournamentJson 1
+                let tournament = createTournament 1
 
                 Jest
                     .expect(tournament)
@@ -21,8 +20,8 @@ Jest.describe (
             "can add players",
             (fun () ->
                 let tournament =
-                    createTournamentJson 1
-                    |> addPlayersJson [| "Ossi"; "Aku" |]
+                    createTournament 1
+                    |> addPlayers [| "Ossi"; "Aku" |]
 
                 Jest
                     .expect(tournament)
@@ -30,7 +29,7 @@ Jest.describe (
                         "{\"rounds\":[{\"number\":1,\"pairings\":[],\"status\":\"Pregame\"}],\"players\":[\"Aku\",\"Ossi\"]}"
                     )
 
-                let withMorePlayers = tournament |> addPlayersJson [| "Veikka" |]
+                let withMorePlayers = tournament |> addPlayers [| "Veikka" |]
 
                 Jest
                     .expect(withMorePlayers)
@@ -43,9 +42,9 @@ Jest.describe (
             "can pair",
             (fun () ->
                 let tournament =
-                    createTournamentJson 1
-                    |> addPlayersJson [| "Ossi"; "Aku" |]
-                    |> pairJson "Swiss"
+                    createTournament 1
+                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> pair "Swiss"
 
                 Jest
                     .expect(tournament)
@@ -58,10 +57,10 @@ Jest.describe (
             "can start round",
             (fun () ->
                 let tournament =
-                    createTournamentJson 1
-                    |> addPlayersJson [| "Ossi"; "Aku" |]
-                    |> pairJson "Swiss"
-                    |> startRoundJson
+                    createTournament 1
+                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> pair "Swiss"
+                    |> startRound
 
                 Jest
                     .expect(tournament)
@@ -74,11 +73,11 @@ Jest.describe (
             "can score",
             (fun () ->
                 let tournament =
-                    createTournamentJson 1
-                    |> addPlayersJson [| "Ossi"; "Aku" |]
-                    |> pairJson "Swiss"
-                    |> startRoundJson
-                    |> scoreJson 0 (10, 10)
+                    createTournament 1
+                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> pair "Swiss"
+                    |> startRound
+                    |> score 0 (10, 10)
 
                 Jest
                     .expect(tournament)
@@ -91,12 +90,12 @@ Jest.describe (
             "can finish round",
             (fun () ->
                 let tournament =
-                    createTournamentJson 1
-                    |> addPlayersJson [| "Ossi"; "Aku" |]
-                    |> pairJson "Swiss"
-                    |> startRoundJson
-                    |> scoreJson 0 (20, 0)
-                    |> finishRoundJson
+                    createTournament 1
+                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> pair "Swiss"
+                    |> startRound
+                    |> score 0 (20, 0)
+                    |> finishRound
 
 
                 Jest
@@ -110,13 +109,13 @@ Jest.describe (
             "can swap two players",
             (fun () ->
                 let tournament =
-                    createTournamentJson 1
-                    |> addPlayersJson [| "Aku"
-                                         "Juha"
-                                         "Ossi"
-                                         "Veikka" |]
-                    |> pairJson "Swiss"
-                    |> swapJson "Aku" "Ossi"
+                    createTournament 1
+                    |> addPlayers [| "Aku"
+                                     "Juha"
+                                     "Ossi"
+                                     "Veikka" |]
+                    |> pair "Swiss"
+                    |> swap "Aku" "Ossi"
 
                 Jest
                     .expect(tournament)
