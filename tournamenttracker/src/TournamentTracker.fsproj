@@ -10,6 +10,6 @@
     <Compile Include="TournamentTracker.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\tournament-lib\src\Tournament.fsproj" />
+    <ProjectReference Include="..\..\tournamentlib\src\Tournament.fsproj" />
   </ItemGroup>
 </Project>
