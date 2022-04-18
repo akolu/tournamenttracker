@@ -1,12 +1,12 @@
-# TournamentTracker
+# tournament-tracker
 
 Next iteration of my yet-to-be-finished tournament tracker library, this time with Fable, which compiles the F# code to javascript.
 
 The repo consists of three projects:
 
-1. [tournamentlib](./tournamentlib/) is the core package for tournament tracking logic, written completely in F#
-2. [tournamenttracker](./tournamenttracker/) is a [Fable](https://fable.io) project that compiles the core package into js and provides an easy-to-use javascript interface for clients
-3. [tournamenttracker-web](./tournamenttracker-web/) is a web application that provides a simple UI for tracking tournaments by utilising the tournamenttracker Fable package (**very much WIP**)
+1. [tournament-lib](./tournament-lib/) is the core package for tournament tracking logic, written completely in F#
+2. [tournament-tracker](./tournament-tracker/) is a [Fable](https://fable.io) project that compiles the core package into js and provides an easy-to-use javascript interface for clients
+3. [tournament-web](./tournament-web/) is a web application that provides a simple UI for tracking tournaments by utilising the tournament-tracker Fable package (**very much WIP**)
 
 ## Requirements
 
@@ -16,8 +16,8 @@ The repo consists of three projects:
 
 ## Testing
 
-- Run `dotnet test` [here](./tournamentlib/test) to test the core library
-- Run `npm test` [here](./tournamenttracker/) to test the Fable js bindings
+- Run `dotnet test` [here](./tournament-lib/test) to test the core library
+- Run `npm test` [here](./tournament-tracker/) to test the Fable js bindings
 
 ## TODOs
 
