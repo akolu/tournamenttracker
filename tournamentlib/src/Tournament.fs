@@ -2,6 +2,7 @@ module Tournament.Tournament
 
 open Round
 open Utils
+open Tournament.PairingGenerator
 open Tournament.Pairing
 
 type Tournament =
@@ -66,20 +67,10 @@ let createTournament rounds =
               Players = [] }
     | _ -> Error "Tournament should have at least one round"
 
-let private addPlayer player tournament =
-    let existing =
-        tournament.Players
-        |> List.tryFind (fun p -> (=) player p)
-
-    match existing with
-    | Some _ -> Error "Player with that name already exists"
-    | None -> Ok { tournament with Players = player :: tournament.Players |> List.sort }
-
-let rec addPlayers players tournament =
-    match players with
-    | [] -> Ok tournament
-    | [ x ] -> addPlayer x tournament
-    | x :: rest -> addPlayer x tournament >>= addPlayers rest
+let addPlayers (players: string list) (tournament: Tournament) =
+    match Seq.tryFind (fun player -> List.exists ((=) player) tournament.Players) players with
+    | Some duplicate -> Error(sprintf "Player %s already exists" duplicate)
+    | None -> Ok { tournament with Players = List.sort (tournament.Players @ players) }
 
 let startRound (tournament: Tournament) = tournament.ModifyCurrentRound start
 
@@ -88,8 +79,8 @@ let finishRound (tournament: Tournament) = tournament.ModifyCurrentRound finish
 let pair alg (tournament: Tournament) =
     let pairingFunc =
         match alg with
-        | PairingGenerator.Swiss -> PairingGenerator.swiss tournament.MatchHistory
-        | PairingGenerator.Shuffle -> PairingGenerator.shuffle
+        | Swiss -> swiss tournament.MatchHistory
+        | Shuffle -> shuffle
 
     tournament.ModifyCurrentRound(createPairings pairingFunc tournament.Standings)
 

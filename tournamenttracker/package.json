@@ -1,0 +1,49 @@
+{
+  "name": "tournamenttracker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/TournamentTracker.js",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.fs.js"
+  ],
+  "scripts": {
+    "postinstall": "dotnet tool restore",
+    "start": "dotnet fable watch src -o build",
+    "clean": "rimraf dist && rimraf src/build",
+    "build": "dotnet fable src -o src/build && babel src/build --out-dir dist",
+    "test": "dotnet fable test -o test/build --run jest"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "roots": [
+      "./test/build"
+    ],
+    "testMatch": [
+      "<rootDir>/**/*.Test.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/.fable/",
+      "/[fF]able.*/",
+      "/node_modules/"
+    ],
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.9",
+    "@babel/preset-env": "^7.16.11",
+    "jest": "^27.5.1",
+    "rimraf": "^3.0.2"
+  }
+}

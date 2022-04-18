@@ -11,11 +11,6 @@ open NUnit.Framework
 [<TestFixture>]
 type TestClass() =
 
-    let unwrap res =
-        match res with
-        | Ok res -> res
-        | Error err -> raise (Exception(err.ToString()))
-
     let table number (p1, p2) =
         let pairing =
             { Number = 0
@@ -98,7 +93,7 @@ type TestClass() =
 
         match tournament with
         | Ok _ -> failwith "Should not be possible to add duplicate players"
-        | Error err -> Assert.AreEqual("Player with that name already exists", err)
+        | Error err -> Assert.AreEqual("Player Alice already exists", err)
 
     [<Test>]
     [<Category("addPlayers")>]
