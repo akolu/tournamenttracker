@@ -3,21 +3,55 @@
   "version": "1.0.0",
   "private": true,
   "main": "dist/Tournament.js",
+  "files": [
+    "**/*.js",
+    "**/*.fs.js"
+  ],
   "scripts": {
     "postinstall": "dotnet tool restore",
     "start": "dotnet fable watch src -o build",
-    "build": "rimraf build && rimraf dist && dotnet fable src -o build && babel build --out-dir dist",
-    "test": "dotnet test test/TournamentTest.fsproj --logger 'console;verbosity=detailed'"
+    "clean": "rimraf build && rimraf dist",
+    "build": "dotnet fable src -o build && babel build --out-dir dist",
+    "test": "dotnet test test/TournamentTest.fsproj --logger 'console;verbosity=detailed'",
+    "jest": "dotnet fable test -o test/build --run jest"
   },
   "babel": {
     "presets": [
-      "@babel/preset-env"
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "16"
+          }
+        }
+      ]
     ]
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "roots": [
+      "./test/build"
+    ],
+    "testMatch": [
+      "<rootDir>/**/*.Test.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/.fable/",
+      "/[fF]able.*/",
+      "/node_modules/"
+    ],
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
+    "jest": "^27.5.1",
     "rimraf": "^3.0.2"
   }
 }
