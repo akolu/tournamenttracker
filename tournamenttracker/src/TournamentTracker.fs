@@ -41,3 +41,13 @@ let score number result tournament =
 
 let swap player1 player2 tournament =
     wrapSerialize (swap player1 player2) tournament
+
+let standings tournament =
+    parse tournament
+    |> (fun t -> t.Standings)
+    |> (fun list -> Encode.Auto.toString (0, list, CamelCase))
+
+let pairings tournament =
+    parse tournament
+    |> (fun t -> t.Pairings)
+    |> (fun pairings -> Encode.Auto.toString (0, pairings, CamelCase))

@@ -414,6 +414,34 @@ type TestClass() =
         )
 
     [<Test>]
+    [<Category("standings")>]
+    member this.``standings does not include Ongoing rounds``() =
+        let tournament =
+            createTournament 2
+            >>= addPlayers [ "Alice"
+                             "Bob"
+                             "James"
+                             "Michael" ]
+            >>= pair Swiss
+            >>= startRound
+            >>= score 0 (11, 9) // Alice 11, Bob 9
+            >>= score 1 (4, 16) // James 4, Michael 16
+            >>= finishRound
+            >>= pair Swiss
+            >>= startRound
+            >>= score 0 (20, 0) // Michael 20, Alice 0
+            |> unwrap
+
+        CollectionAssert.AreEqual(
+            [ ("Michael", 16)
+              ("Alice", 11)
+              ("Bob", 9)
+              ("James", 4) ],
+            tournament.Standings
+        )
+
+
+    [<Test>]
     [<Category("swap")>]
     member this.``swap changes places of two players in current round``() =
         let tournament =
