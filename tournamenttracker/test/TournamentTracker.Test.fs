@@ -163,4 +163,20 @@ Jest.describe (
                         "[{\"number\":0,\"player1\":\"Aku\",\"player2\":\"Juha\",\"player1Score\":0,\"player2Score\":0},{\"number\":1,\"player1\":\"Ossi\",\"player2\":\"Veikka\",\"player1Score\":0,\"player2Score\":0}]"
                     ))
         )
+
+        Jest.test (
+            "createTournament2",
+            (fun () ->
+                let foo = createTournament2 1
+
+                Jest
+                    .expect(foo)
+                    .toEqual (
+                        {| Players = [||]
+                           Rounds =
+                            [| {| Number = 1
+                                  Pairings = [||]
+                                  Status = "Pregame" |} |] |}
+                    ))
+        )
 )

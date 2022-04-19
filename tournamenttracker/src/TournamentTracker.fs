@@ -1,5 +1,6 @@
 module TournamentTracker
 
+open Fable.Core
 open Tournament.Tournament
 open Tournament.PairingGenerator
 open Tournament.Utils
@@ -13,13 +14,32 @@ let private parse str =
     Decode.Auto.fromString<Tournament> (str, CamelCase)
     |> unwrap
 
+let roundToJS (r: Tournament.Round.Round) =
+    {| Number = r.Number
+       Pairings = List.toArray (List.map JsInterop.toPlainJsObj r.Pairings)
+       Status = r.Status.ToString() |}
+
+let tournamentToJS (t: Tournament) =
+    {| Players = List.toArray t.Players
+       Rounds = List.toArray (List.map roundToJS t.Rounds) |}
+
 let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) tournament =
     parse tournament |> fn |> serialize
 
 let createTournament rounds = createTournament rounds |> serialize
 
+let createTournament2 rounds =
+    Tournament.Tournament.createTournament rounds
+    |> unwrap
+    |> tournamentToJS
+
 let addPlayers players tournament =
     wrapSerialize (addPlayers (players |> Array.toList)) tournament
+
+let addPlayers2 players tournament =
+    Tournament.Tournament.addPlayers (players |> Array.toList) tournament
+    |> unwrap
+    |> JsInterop.toPlainJsObj
 
 let private parseAlg alg =
     match alg with

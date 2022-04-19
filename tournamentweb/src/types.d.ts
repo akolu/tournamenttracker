@@ -1,1 +1,1 @@
-declare module 'tournamenttracker'
+declare module 'tournament-tracker'

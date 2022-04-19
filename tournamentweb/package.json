@@ -16,6 +16,6 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
-    "tournamenttracker": "file:tournamenttracker-1.0.0.tgz"
+    "tournament-tracker": "file:tournament-tracker-1.0.0.tgz"
   }
 }
