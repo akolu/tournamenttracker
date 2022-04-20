@@ -151,8 +151,8 @@ type TestClass() =
                              "Michael" ]
             >>= pair Shuffle
             >>= startRound // round 1
-            >>= score 0 (15, 5)
-            >>= score 1 (2, 18)
+            >>= score 1 (15, 5)
+            >>= score 2 (2, 18)
             >>= finishRound
             |> unwrap
 
@@ -163,8 +163,8 @@ type TestClass() =
             t1
             |> pair Swiss
             >>= startRound
-            >>= score 0 (20, 0)
-            >>= score 1 (3, 17)
+            >>= score 1 (20, 0)
+            >>= score 2 (3, 17)
             >>= finishRound
             |> unwrap
 
@@ -188,7 +188,7 @@ type TestClass() =
             >>= addPlayers [ "Alice"; "Bob" ]
             >>= pair Shuffle
             >>= startRound
-            >>= score 0 (10, 10)
+            >>= score 1 (10, 10)
             >>= finishRound
             >>= finishRound
 
@@ -301,9 +301,9 @@ type TestClass() =
               >>= addPlayers [ "Alice"; "Bob" ]
               >>= pair Shuffle
               >>= startRound
-              >>= score 0 (10, 10)
+              >>= score 1 (10, 10)
               >>= finishRound
-              >>= score 0 (11, 9)
+              >>= score 1 (11, 9)
             with
         | Ok _ -> failwith "Did not throw"
         | Error err -> Assert.AreEqual("Tournament already finished", err)
@@ -329,8 +329,8 @@ type TestClass() =
 
         let finished =
             tournament
-            |> score 0 (16, 4)
-            >>= score 1 (1, 19)
+            |> score 1 (16, 4)
+            >>= score 2 (1, 19)
             >>= finishRound
             |> unwrap
 
@@ -424,12 +424,12 @@ type TestClass() =
                              "Michael" ]
             >>= pair Swiss
             >>= startRound
-            >>= score 0 (11, 9) // Alice 11, Bob 9
-            >>= score 1 (4, 16) // James 4, Michael 16
+            >>= score 1 (11, 9) // Alice 11, Bob 9
+            >>= score 2 (4, 16) // James 4, Michael 16
             >>= finishRound
             >>= pair Swiss
             >>= startRound
-            >>= score 0 (20, 0) // Michael 20, Alice 0
+            >>= score 1 (20, 0) // Michael 20, Alice 0
             |> unwrap
 
         CollectionAssert.AreEqual(
@@ -533,9 +533,9 @@ type TestClass() =
         // ROUND 1 SCORES
         let round1Finished =
             round1
-            |> score 0 (15, 5) // Alice 15, Bob 5
-            >>= score 1 (11, 9) // Jack 11, James 9
-            >>= score 2 (7, 13) // Lily 7, Michael 13
+            |> score 1 (15, 5) // Alice 15, Bob 5
+            >>= score 2 (11, 9) // Jack 11, James 9
+            >>= score 3 (7, 13) // Lily 7, Michael 13
             >>= finishRound
             |> unwrap
 
@@ -566,9 +566,9 @@ type TestClass() =
         // ROUND 2 RESULTS
         let round2Finished =
             round2
-            |> score 0 (20, 0) // Alice 20, Michael 0
-            >>= score 1 (4, 16) // Jack 4, Lily 16
-            >>= score 2 (9, 11) // James 9, Bob 11
+            |> score 1 (20, 0) // Alice 20, Michael 0
+            >>= score 2 (4, 16) // Jack 4, Lily 16
+            >>= score 3 (9, 11) // James 9, Bob 11
             >>= finishRound
             |> unwrap
 
@@ -599,9 +599,9 @@ type TestClass() =
         // ROUND 3 RESULTS
         let round3Finished =
             round3
-            |> score 0 (20, 0) // Alice 20, Lily 0
-            >>= score 1 (9, 11) // James 9, Michael 11
-            >>= score 2 (10, 10) // Bob 10, Jack 10
+            |> score 1 (20, 0) // Alice 20, Lily 0
+            >>= score 2 (9, 11) // James 9, Michael 11
+            >>= score 3 (10, 10) // Bob 10, Jack 10
             >>= finishRound
             |> unwrap
 
@@ -632,9 +632,9 @@ type TestClass() =
         // ROUND 4 RESULTS
         let round4Finished =
             round4
-            |> score 0 (3, 17) // Alice 3, James 17
-            >>= score 1 (9, 11) // Bob 9, Lily 11
-            >>= score 2 (15, 5) // Jack 15, Michael 5
+            |> score 1 (3, 17) // Alice 3, James 17
+            >>= score 2 (9, 11) // Bob 9, Lily 11
+            >>= score 3 (15, 5) // Jack 15, Michael 5
             >>= finishRound
             |> unwrap
 

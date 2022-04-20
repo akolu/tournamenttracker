@@ -6,8 +6,8 @@ open Tournament.PairingGenerator
 open Tournament.Pairing
 
 type Tournament =
-    { Rounds: List<Round>
-      Players: List<string> }
+    { Rounds: Round list
+      Players: string list }
     member private this.CurrentRound =
         List.tryFind (fun rnd -> rnd.Status <> Finished) this.Rounds
 

@@ -23,7 +23,7 @@ type Round =
 let private pairsToPairings pairs =
     pairs
     |> List.mapi (fun i ((p1Name, _), (p2Name, _)) ->
-        { Number = i
+        { Number = (+) i 1
           Player1 = p1Name
           Player2 = p2Name
           Player1Score = 0

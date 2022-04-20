@@ -1,4 +1,4 @@
-import { createTournament, addPlayers, pair } from 'tournamenttracker'
+import { createTournament, addPlayers, pair } from 'tournament-tracker'
 
 let tournament = createTournament(1)
 
@@ -14,4 +14,4 @@ console.log('tournament3', tournament3)
 
 const paired = pair('swiss', tournament3)
 
-console.log('paired', paired)
+console.log('pairings', paired.rounds[0].pairings)
