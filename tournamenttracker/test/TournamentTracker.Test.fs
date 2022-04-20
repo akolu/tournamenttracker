@@ -67,7 +67,7 @@ Jest.describe (
                            rounds =
                             [| {| number = 1
                                   pairings =
-                                   [| {| number = 0
+                                   [| {| number = 1
                                          player1 = "Aku"
                                          player2 = "Ossi"
                                          player1Score = 0
@@ -92,7 +92,7 @@ Jest.describe (
                            rounds =
                             [| {| number = 1
                                   pairings =
-                                   [| {| number = 0
+                                   [| {| number = 1
                                          player1 = "Aku"
                                          player2 = "Ossi"
                                          player1Score = 0
@@ -109,7 +109,7 @@ Jest.describe (
                     |> addPlayers [| "Ossi"; "Aku" |]
                     |> pair "Swiss"
                     |> startRound
-                    |> score 0 (10, 10)
+                    |> score 1 (10, 10)
 
                 Jest
                     .expect(tournament)
@@ -118,7 +118,7 @@ Jest.describe (
                            rounds =
                             [| {| number = 1
                                   pairings =
-                                   [| {| number = 0
+                                   [| {| number = 1
                                          player1 = "Aku"
                                          player2 = "Ossi"
                                          player1Score = 10
@@ -135,7 +135,7 @@ Jest.describe (
                     |> addPlayers [| "Ossi"; "Aku" |]
                     |> pair "Swiss"
                     |> startRound
-                    |> score 0 (20, 0)
+                    |> score 1 (20, 0)
                     |> finishRound
 
 
@@ -146,7 +146,7 @@ Jest.describe (
                            rounds =
                             [| {| number = 1
                                   pairings =
-                                   [| {| number = 0
+                                   [| {| number = 1
                                          player1 = "Aku"
                                          player2 = "Ossi"
                                          player1Score = 20
@@ -174,12 +174,12 @@ Jest.describe (
                            rounds =
                             [| {| number = 1
                                   pairings =
-                                   [| {| number = 0
+                                   [| {| number = 1
                                          player1 = "Ossi"
                                          player2 = "Juha"
                                          player1Score = 0
                                          player2Score = 0 |}
-                                      {| number = 1
+                                      {| number = 2
                                          player1 = "Aku"
                                          player2 = "Veikka"
                                          player1Score = 0
@@ -199,8 +199,8 @@ Jest.describe (
                                      "Veikka" |]
                     |> pair "Swiss"
                     |> startRound
-                    |> score 0 (11, 9)
-                    |> score 1 (5, 15)
+                    |> score 1 (11, 9)
+                    |> score 2 (5, 15)
                     |> finishRound
                     |> standings
 
@@ -229,12 +229,12 @@ Jest.describe (
                 Jest
                     .expect(pairings)
                     .toEqual (
-                        [| {| number = 0
+                        [| {| number = 1
                               player1 = "Aku"
                               player2 = "Juha"
                               player1Score = 0
                               player2Score = 0 |}
-                           {| number = 1
+                           {| number = 2
                               player1 = "Ossi"
                               player2 = "Veikka"
                               player1Score = 0
