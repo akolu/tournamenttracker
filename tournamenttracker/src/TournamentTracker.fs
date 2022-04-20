@@ -1,45 +1,97 @@
 module TournamentTracker
 
-open Fable.Core
 open Tournament.Tournament
 open Tournament.PairingGenerator
 open Tournament.Utils
+open Fable.Core.JsInterop
 
-open Thoth.Json
+// DTOs are anonymous records so that they get compiled into plain javascript objects instead of class instances
+type PairingDTO =
+    {| number: int
+       player1: string
+       player2: string
+       player1Score: int
+       player2Score: int |}
 
-let private serialize (tournament: Result<Tournament, string>) =
-    Encode.Auto.toString (0, (tournament |> unwrap), CamelCase)
+type RoundDTO =
+    {| number: int
+       pairings: PairingDTO []
+       status: string |}
 
-let private parse str =
-    Decode.Auto.fromString<Tournament> (str, CamelCase)
+type TournamentDTO =
+    {| players: string []
+       rounds: RoundDTO [] |}
+
+let private SerializePairing (p: Tournament.Pairing.Pairing) =
+    {| number = p.Number
+       player1 = p.Player1
+       player2 = p.Player2
+       player1Score = p.Player1Score
+       player2Score = p.Player2Score |}
+
+let private ParsePairing (p: obj) : Tournament.Pairing.Pairing =
+    p :?> PairingDTO
+    |> (fun p ->
+        { Number = p.number
+          Player1 = p.player1
+          Player2 = p.player2
+          Player1Score = p.player1Score
+          Player2Score = p.player2Score })
+
+let private ParseStatus s =
+    match s with
+    | "Pregame" -> Tournament.Round.Pregame
+    | "Ongoing" -> Tournament.Round.Ongoing
+    | "Finished" -> Tournament.Round.Finished
+    | _ -> raise (System.Exception "invalid round status")
+
+let private SerializeRound (r: Tournament.Round.Round) =
+    {| number = r.Number
+       pairings = List.toArray (List.map SerializePairing r.Pairings)
+       status = r.Status.ToString() |}
+
+let private ParseRound (r: obj) : Tournament.Round.Round =
+    r :?> RoundDTO
+    |> (fun r ->
+        { Number = r.number
+          Pairings = List.map ParsePairing (Array.toList r.pairings)
+          Status = ParseStatus r.status })
+
+let private SerializeTournament (t: Tournament) =
+    {| players = List.toArray t.Players
+       rounds = List.toArray (List.map SerializeRound t.Rounds) |}
+
+let private ParseTournament (t: obj) =
+    t :?> TournamentDTO
+    |> (fun t ->
+        { Players = Array.toList t.players
+          Rounds = List.map ParseRound (Array.toList t.rounds) })
+
+let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) (tournament: obj) =
+    tournament
+    |> ParseTournament
+    |> fn
     |> unwrap
+    |> SerializeTournament
 
-let roundToJS (r: Tournament.Round.Round) =
-    {| Number = r.Number
-       Pairings = List.toArray (List.map JsInterop.toPlainJsObj r.Pairings)
-       Status = r.Status.ToString() |}
-
-let tournamentToJS (t: Tournament) =
-    {| Players = List.toArray t.Players
-       Rounds = List.toArray (List.map roundToJS t.Rounds) |}
-
-let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) tournament =
-    parse tournament |> fn |> serialize
-
-let createTournament rounds = createTournament rounds |> serialize
+let createTournament rounds =
+    createTournament rounds
+    |> unwrap
+    |> SerializeTournament
 
 let createTournament2 rounds =
     Tournament.Tournament.createTournament rounds
     |> unwrap
-    |> tournamentToJS
+    |> SerializeTournament
 
 let addPlayers players tournament =
     wrapSerialize (addPlayers (players |> Array.toList)) tournament
 
 let addPlayers2 players tournament =
-    Tournament.Tournament.addPlayers (players |> Array.toList) tournament
+    ParseTournament tournament
+    |> Tournament.Tournament.addPlayers (players |> Array.toList)
     |> unwrap
-    |> JsInterop.toPlainJsObj
+    |> SerializeTournament
 
 let private parseAlg alg =
     match alg with
@@ -63,11 +115,15 @@ let swap player1 player2 tournament =
     wrapSerialize (swap player1 player2) tournament
 
 let standings tournament =
-    parse tournament
+    tournament
+    |> ParseTournament
     |> (fun t -> t.Standings)
-    |> (fun list -> Encode.Auto.toString (0, list, CamelCase))
+    |> List.map (fun (name, score) -> {| player = name; score = score |})
+    |> Array.ofList
 
 let pairings tournament =
-    parse tournament
+    tournament
+    |> ParseTournament
     |> (fun t -> t.Pairings)
-    |> (fun pairings -> Encode.Auto.toString (0, pairings, CamelCase))
+    |> List.map SerializePairing
+    |> Array.ofList
