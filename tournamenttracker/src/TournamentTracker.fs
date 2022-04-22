@@ -79,19 +79,8 @@ let createTournament rounds =
     |> unwrap
     |> SerializeTournament
 
-let createTournament2 rounds =
-    Tournament.Tournament.createTournament rounds
-    |> unwrap
-    |> SerializeTournament
-
 let addPlayers players tournament =
     wrapSerialize (addPlayers (players |> Array.toList)) tournament
-
-let addPlayers2 players tournament =
-    ParseTournament tournament
-    |> Tournament.Tournament.addPlayers (players |> Array.toList)
-    |> unwrap
-    |> SerializeTournament
 
 let private parseAlg alg =
     match alg with

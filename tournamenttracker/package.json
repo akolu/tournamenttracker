@@ -3,15 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "main": "dist/TournamentTracker.js",
+  "types": "dist/types.d.ts",
   "files": [
     "dist/**/*.js",
-    "dist/**/*.fs.js"
+    "dist/**/*.fs.js",
+    "dist/**/*.d.ts"
   ],
   "scripts": {
     "postinstall": "dotnet tool restore",
     "start": "dotnet fable watch src -o build",
     "clean": "rimraf dist && rimraf src/build",
-    "build": "dotnet fable src -o src/build && babel src/build --out-dir dist",
+    "build": "dotnet fable src -o src/build && babel src/build --out-dir dist && cp types.d.ts dist",
     "test": "dotnet fable test -o test/build --run jest"
   },
   "babel": {
