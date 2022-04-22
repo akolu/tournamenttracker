@@ -11,9 +11,9 @@
   ],
   "scripts": {
     "postinstall": "dotnet tool restore",
-    "start": "dotnet fable watch src -o build",
+    "start": "dotnet fable watch src -o src/build --run webpack serve",
     "clean": "rimraf dist && rimraf src/build",
-    "build": "dotnet fable src -o src/build && babel src/build --out-dir dist && cp types.d.ts dist",
+    "build": "dotnet fable src -o src/build && webpack && copyfiles -u 1 public/* dist",
     "test": "dotnet fable test -o test/build --run jest"
   },
   "babel": {
@@ -45,7 +45,15 @@
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
+    "copyfiles": "^2.4.1",
     "jest": "^27.5.1",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.8.1"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   }
 }
