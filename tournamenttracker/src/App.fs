@@ -5,39 +5,40 @@ module App
  You can find more info about Elmish architecture and samples at https://elmish.github.io/
 *)
 
+open Feliz
 open Elmish
 open Elmish.React
-open Fable.React
-open Fable.React.Props
 
 // MODEL
 
-type Model = int
+type State = { Count: int }
 
 type Msg =
-| Increment
-| Decrement
+    | Increment
+    | Decrement
 
-let init() : Model = 0
+let init () = { Count = 0 }, Cmd.none
 
 // UPDATE
 
-let update (msg:Msg) (model:Model) =
+let update (msg: Msg) (state: State) =
     match msg with
-    | Increment -> model + 1
-    | Decrement -> model - 1
+    | Increment -> { state with Count = state.Count + 1 }, Cmd.none
+    | Decrement -> { state with Count = state.Count - 1 }, Cmd.none
 
 // VIEW (rendered with React)
 
-let view (model:Model) dispatch =
+let render (state: State) (dispatch: Msg -> unit) =
+    Html.div [ Html.button [ prop.onClick (fun _ -> dispatch Increment)
+                             prop.text "Increment" ]
 
-  div []
-      [ button [ OnClick (fun _ -> dispatch Increment) ] [ str "+" ]
-        div [] [ str (string model) ]
-        button [ OnClick (fun _ -> dispatch Decrement) ] [ str "-" ] ]
+               Html.button [ prop.onClick (fun _ -> dispatch Decrement)
+                             prop.text "Decrement" ]
+
+               Html.h1 state.Count ]
 
 // App
-Program.mkSimple init update view
+Program.mkProgram init update render
 |> Program.withReactSynchronous "elmish-app"
 |> Program.withConsoleTrace
 |> Program.run
