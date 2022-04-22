@@ -14,5 +14,13 @@ module.exports = {
     devServer: {
         static: path.join(__dirname, 'public'),
         port: 8080,
+    },
+    module: {
+        rules: [
+            {
+                test: /\.(sass|scss|css)$/,
+                use: [ 'style-loader', 'css-loader' ] 
+            },
+        ]
     }
 }

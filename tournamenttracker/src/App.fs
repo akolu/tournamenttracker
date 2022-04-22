@@ -8,6 +8,7 @@ module App
 open Feliz
 open Elmish
 open Elmish.React
+open Components.HelloWorld
 
 // MODEL
 
@@ -28,8 +29,10 @@ let update (msg: Msg) (state: State) =
 
 // VIEW (rendered with React)
 
-let render (state: State) (dispatch: Msg -> unit) =
-    Html.div [ Html.button [ prop.onClick (fun _ -> dispatch Increment)
+let view (state: State) (dispatch: Msg -> unit) =
+    Html.div [ HelloWorld()
+
+               Html.button [ prop.onClick (fun _ -> dispatch Increment)
                              prop.text "Increment" ]
 
                Html.button [ prop.onClick (fun _ -> dispatch Decrement)
@@ -38,7 +41,7 @@ let render (state: State) (dispatch: Msg -> unit) =
                Html.h1 state.Count ]
 
 // App
-Program.mkProgram init update render
+Program.mkProgram init update view
 |> Program.withReactSynchronous "elmish-app"
 |> Program.withConsoleTrace
 |> Program.run

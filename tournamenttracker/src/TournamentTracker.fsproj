@@ -10,6 +10,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TournamentTracker.fs" />
+    <Compile Include="Components/Hello/Hello.fs" />
+    <Compile Include="Components.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
