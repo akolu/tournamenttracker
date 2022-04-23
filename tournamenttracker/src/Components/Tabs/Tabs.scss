@@ -1,0 +1,33 @@
+.Tabs__div__wrapper {
+    display: flex;
+    flex-direction: column;
+
+    & > ul {
+        li:last-of-type {
+            border-bottom: 1px solid #000;
+        }
+    
+        li:nth-child(even) {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+        }
+    
+        li {
+            padding: 1rem;
+            border-right: 1px solid #000;
+            &.active {
+                border-right: 0;
+                color: red;
+            }
+    
+            &:hover {
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+.Tabs__div__fill {
+    flex: 1;
+    border-right: 1px solid #000;
+}
