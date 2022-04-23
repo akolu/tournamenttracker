@@ -1,9 +1,10 @@
-module Components.HelloWorld
+module App.Components.Hello
 
 open Feliz
 
-Fable.Core.JsInterop.importSideEffects "./Hello.css"
+Fable.Core.JsInterop.importSideEffects "./Hello.scss"
 
-let HelloWorld () =
+[<ReactComponent>]
+let Hello () =
     Html.h1 [ prop.className "Hello"
               prop.text "Hello World" ]

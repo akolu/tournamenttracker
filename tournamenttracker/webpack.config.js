@@ -5,7 +5,7 @@
 var path = require("path");
 
 module.exports = {
-    mode: "development",
+    mode: 'development',
     entry: "./src/build/App.js",
     output: {
         path: path.join(__dirname, "./dist"),
@@ -19,7 +19,7 @@ module.exports = {
         rules: [
             {
                 test: /\.(sass|scss|css)$/,
-                use: [ 'style-loader', 'css-loader' ] 
+                use: [ 'style-loader', 'css-loader', 'sass-loader' ] 
             },
         ]
     }
