@@ -160,10 +160,12 @@ Jest.describe (
             (fun () ->
                 let tournament =
                     createTournament 1
-                    |> addPlayers [| "Aku"
-                                     "Juha"
-                                     "Ossi"
-                                     "Veikka" |]
+                    |> addPlayers [|
+                        "Aku"
+                        "Juha"
+                        "Ossi"
+                        "Veikka"
+                       |]
                     |> pair "Swiss"
                     |> swap "Aku" "Ossi"
 
@@ -193,10 +195,12 @@ Jest.describe (
             (fun () ->
                 let standings =
                     createTournament 1
-                    |> addPlayers [| "Aku"
-                                     "Juha"
-                                     "Ossi"
-                                     "Veikka" |]
+                    |> addPlayers [|
+                        "Aku"
+                        "Juha"
+                        "Ossi"
+                        "Veikka"
+                       |]
                     |> pair "Swiss"
                     |> startRound
                     |> score 1 (11, 9)
@@ -219,10 +223,12 @@ Jest.describe (
             (fun () ->
                 let pairings =
                     createTournament 1
-                    |> addPlayers [| "Aku"
-                                     "Juha"
-                                     "Ossi"
-                                     "Veikka" |]
+                    |> addPlayers [|
+                        "Aku"
+                        "Juha"
+                        "Ossi"
+                        "Veikka"
+                       |]
                     |> pair "Swiss"
                     |> pairings
 
