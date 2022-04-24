@@ -9,12 +9,14 @@
     <PackageReference Include="Fable.FontAwesome.Free" Version="2.1.0" />
     <PackageReference Include="Feliz" Version="1.62.0" />
     <PackageReference Include="Feliz.Bulma" Version="2.18.0" />
+    <PackageReference Include="Feliz.Bulma.Divider" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TournamentTracker.fs" />
     <Compile Include="State.fs" />
     <Compile Include="Context.fs" />
     <Compile Include="Components/Counter/Counter.fs" />
+    <Compile Include="Components/Settings/Settings.fs" />
     <Compile Include="Components/Round/Round.fs" />
     <Compile Include="Components/Tabs/Tabs.fs" />
     <Compile Include="Components/Hello/Hello.fs" />

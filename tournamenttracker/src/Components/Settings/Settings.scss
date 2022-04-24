@@ -1,0 +1,56 @@
+.Settings__button__IconButton.button.is-rounded {
+    padding-left: 1em;
+    padding-right: 1em;
+    max-width: 30px;
+}
+
+.Settings__div__root {
+    flex: 1;
+    border-top: 1px solid #000;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 0.4rem;
+    padding-left: .9rem;
+
+    & h1 {
+        margin-bottom: 0;
+    }
+
+    & label.label {
+        display: flex;
+        align-items: center;
+        margin-right: 10px;
+        margin-bottom: 0;
+        font-weight: normal;
+        font-size: .75rem;
+    }
+}
+
+.Settings__div__field {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    grid-gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.Settings__div__rounds {
+    display: flex;
+
+    &>button {
+        border-radius: 50px;
+    }
+
+    &>div {
+        padding-left: 10px;
+        padding-right: 10px;
+        align-items: center;
+        display: flex;
+    }
+}
+
+.Settings__Players--inputwrapper {
+    display: grid;
+    grid-template-columns: 1fr 30px;
+    grid-gap: 5px;
+    
+}

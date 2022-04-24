@@ -4,6 +4,7 @@ open Feliz
 open Fable.FontAwesome
 open Fable.FontAwesome.Free
 open App.Components.Tabs
+open App.Components.Settings
 open App.Components.Round
 open Feliz.Bulma
 
@@ -22,10 +23,12 @@ let TournamentContainer () =
                 {| onTabChanged = changeTab
                    items =
                     [ Bulma.icon [
-                          Html.i [ prop.className "fas fa-home" ]
+                          Html.i [
+                              prop.className "fa fa-screwdriver-wrench"
+                          ]
                       ]
                       Html.span "1"
                       Html.span "2" ] |}
-            Round()
+            Settings()
         ]
     ]

@@ -1,6 +1,7 @@
 .Tabs__div__wrapper {
     display: flex;
     flex-direction: column;
+    border-top: 1px solid #000;
 
     & > ul {
         li:last-of-type {
@@ -13,11 +14,15 @@
         }
     
         li {
-            padding: 1rem;
+            padding: .5rem;
             border-right: 1px solid #000;
+            border-left: 1px solid #000;
+            color: #aaa;
+            display: flex;
+            justify-content: center;
             &.active {
                 border-right: 0;
-                color: red;
+                color: #000;
             }
     
             &:hover {
