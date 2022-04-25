@@ -30,10 +30,10 @@
     display: grid;
     grid-template-columns: 50px 1fr;
     grid-gap: 10px;
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
 }
 
-.Settings__div__rounds {
+.Settings__NumberSelector--wrapper {
     display: flex;
 
     &>button {
@@ -41,16 +41,16 @@
     }
 
     &>div {
-        padding-left: 10px;
-        padding-right: 10px;
+        width: 40px;
         align-items: center;
+        justify-content: center;
         display: flex;
     }
 }
 
 .Settings__Players--inputwrapper {
     display: grid;
-    grid-template-columns: 1fr 30px;
+    grid-template-columns: 3fr 1fr;
     grid-gap: 5px;
-    
+    margin-bottom: .2rem;
 }
