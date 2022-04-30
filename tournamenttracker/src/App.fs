@@ -11,7 +11,7 @@ Fable.Core.JsInterop.importSideEffects "./App.scss"
 
 let view (state: State) (dispatch: Msg -> unit) =
     Html.div [
-        React.contextProvider (counterContext, (state, dispatch), [ TournamentContainer() ])
+        React.contextProvider (tournamentContext, (state, dispatch), [ TournamentContainer() ])
     ]
 
 Program.mkProgram state update view

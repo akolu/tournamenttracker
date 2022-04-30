@@ -7,5 +7,12 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts/";
 
 .elmish-app {
     display: flex;
+    flex: 1;
     justify-content: center;
+
+     & > div {
+         display: flex;
+         flex: 1;
+         justify-content: center;
+     }
 }

@@ -31,6 +31,14 @@
     grid-template-columns: 50px 1fr;
     grid-gap: 10px;
     margin-bottom: .5rem;
+
+    & > span {
+        display: flex;
+    }
+
+    & input {
+        min-width: 80px;
+    }
 }
 
 .Settings__NumberSelector--wrapper {
@@ -50,7 +58,12 @@
 
 .Settings__Players--inputwrapper {
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    // grid-template-columns: 3fr 1fr;
     grid-gap: 5px;
     margin-bottom: .2rem;
+}
+
+.Settings__button--save {
+    margin: 1rem 0;
+    width: 75px;
 }

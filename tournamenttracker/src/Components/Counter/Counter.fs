@@ -10,12 +10,12 @@ let Counter () =
 
     Html.div [
         Html.button [
-            prop.onClick (fun _ -> dispatch Increment)
+            prop.onClick (fun _ -> dispatch (Increment 1))
             prop.text "Increment"
         ]
 
         Html.button [
-            prop.onClick (fun _ -> dispatch Decrement)
+            prop.onClick (fun _ -> dispatch (Decrement 1))
             prop.text "Decrement"
         ]
 
