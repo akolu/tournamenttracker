@@ -7,6 +7,7 @@ open App.Components.Tabs
 open App.Components.Settings
 open App.Components.Round
 open Feliz.Bulma
+open App.State
 open App.Context
 
 Fable.Core.JsInterop.importSideEffects "./TournamentContainer.scss"
@@ -15,25 +16,31 @@ Fable.Core.JsInterop.importSideEffects "./TournamentContainer.scss"
 let TournamentContainer () =
 
     let (state, dispatch) = React.useContext (tournamentContext)
+    let (tab, setTab) = React.useState (0)
 
-    let changeTab (tab: int) =
-        System.Console.WriteLine(sprintf "Tab %d selected" tab)
+    let onTournamentCreated settings =
+        dispatch (CreateTournament settings)
+        setTab (1)
 
-    let renderTabs =
-        [ Bulma.icon [
-              Html.i [
-                  prop.className "fa fa-screwdriver-wrench"
-              ]
-          ] ]
-        @ (state.Tournament.Rounds
-           |> List.map (fun r -> (Html.span r.Number)))
+    let getActiveTab =
+        match tab with
+        | 0 -> Settings(onTournamentCreated)
+        | num ->
+            Round(
+                state.Tournament.Rounds
+                |> List.find (fun r -> ((=) r.Number num))
+            )
 
     Html.div [
-        prop.className "TournamentContainer__div__root"
+        prop.className "TournamentContainer__div--root"
         prop.children [
             Tabs
-                {| onTabChanged = changeTab
-                   items = renderTabs |}
-            Settings()
+                {| onTabChanged = setTab
+                   selected = tab
+                   rounds = state.Tournament.Rounds |}
+            Html.div [
+                prop.className "TournamentContainer__div--content"
+                prop.children getActiveTab
+            ]
         ]
     ]

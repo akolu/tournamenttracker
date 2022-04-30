@@ -14,7 +14,7 @@ let private IconButton (icon: Fa.IconOption, fn: Browser.Types.MouseEvent -> uni
         button.isRounded
         button.isSmall
         prop.onClick fn
-        prop.className "Settings__button__IconButton"
+        prop.className "IconButton__button--root"
         prop.children [
             Bulma.icon (Fa.i [ icon ] [])
         ]
@@ -27,10 +27,10 @@ type private IconButtonAction =
     | DecPlayers
 
 [<ReactComponent>]
-let Settings () =
+let Settings (onCreate: TournamentSettings -> unit) =
 
-    let (state, dispatch) = React.useContext (tournamentContext)
     let (rounds, setRounds) = React.useState (5)
+
     let (players, setPlayers) = React.useState [ ("", 0); ("", 0) ]
 
     let iconClick action =
@@ -55,7 +55,7 @@ let Settings () =
             |> Seq.iter (fun p -> System.Console.WriteLine(fst p + ": " + (snd p).ToString()))
 
     Html.div [
-        prop.className "Settings__div__root"
+        prop.className "Settings__div--root"
         prop.children [
             Bulma.columns [
                 prop.children [
@@ -63,7 +63,7 @@ let Settings () =
                         prop.children [
                             Bulma.Divider.divider "Configuration"
                             Html.div [
-                                prop.className "Settings__div__field"
+                                prop.className "Settings__div--field"
                                 prop.children [
                                     Bulma.label [ prop.text "Name" ]
                                     Bulma.input.text [
@@ -74,7 +74,7 @@ let Settings () =
                                 ]
                             ]
                             Html.div [
-                                prop.className "Settings__div__field"
+                                prop.className "Settings__div--field"
                                 prop.children [
                                     Bulma.label "Rounds"
                                     Html.div [
@@ -88,7 +88,7 @@ let Settings () =
                                 ]
                             ]
                             Html.div [
-                                prop.className "Settings__div__field"
+                                prop.className "Settings__div--field"
                                 prop.children [
                                     Bulma.label "Players"
                                     Html.div [
@@ -104,8 +104,7 @@ let Settings () =
                             Bulma.button.button [
                                 button.isSmall
                                 button.isRounded
-                                prop.onClick (fun _ ->
-                                    dispatch (CreateTournament { Rounds = rounds; Players = players }))
+                                prop.onClick (fun _ -> onCreate { Rounds = rounds; Players = players })
                                 prop.className "Settings__button--save"
                                 prop.children [
                                     Bulma.icon (Fa.i [ Fa.Solid.Save ] [])
