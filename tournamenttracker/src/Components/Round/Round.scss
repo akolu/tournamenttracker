@@ -1,3 +1,53 @@
 .Round__div--root {
     flex: 1;
+
+    & button {
+        margin-right: .5rem;
+    }
+}
+
+.Round__div--pairings {
+    
+    & > div:not(:first-child):nth-child(odd){
+        background: whitesmoke;
+    }
+
+    & > div:not(:first-child):hover {
+        cursor: pointer;
+        background-color: aliceblue;
+        // text-decoration: underline;
+    }
+
+    & > div {
+        display: grid;
+        grid-template-columns: 1.5fr 3fr 3fr 60px;
+    
+        & span {
+            display: flex;
+        
+            & > input {
+                max-width: 5rem;
+                margin-left: .5rem;
+            }
+
+            & > b {
+                margin-left: .5rem;
+            }
+        }
+
+        & span:last-child {
+            justify-content: end;
+        }
+
+        button {
+            background: transparent;
+            width: 30px;
+            border: 0px solid #000;
+            cursor: pointer;
+            
+            & > b {
+                margin-left: .5rem;
+            }
+        }
+    }
 }

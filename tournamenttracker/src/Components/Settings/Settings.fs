@@ -3,7 +3,6 @@ module Components.Settings
 open Feliz
 open Feliz.Bulma
 open Fable.FontAwesome
-open Context
 open State
 
 Fable.Core.JsInterop.importSideEffects "./Settings.scss"
@@ -31,7 +30,14 @@ let Settings (onCreate: TournamentSettings -> unit) =
 
     let (rounds, setRounds) = React.useState (5)
 
-    let (players, setPlayers) = React.useState [ ("", 0); ("", 0) ]
+    let (players, setPlayers) =
+        React.useState [
+            ("Aku Ankka", 0)
+            ("Mikki Hiiri", 0)
+            ("Pelle Peloton", 0)
+            ("Hessu Hopo", 0)
+            ("Poliisimestari Sisu", 0)
+        ]
 
     let iconClick action =
         (fun _ ->
