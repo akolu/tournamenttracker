@@ -1,10 +1,10 @@
-module App.Components.Settings
+module Components.Settings
 
 open Feliz
 open Feliz.Bulma
 open Fable.FontAwesome
-open App.Context
-open App.State
+open Context
+open State
 
 Fable.Core.JsInterop.importSideEffects "./Settings.scss"
 

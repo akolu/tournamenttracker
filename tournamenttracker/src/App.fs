@@ -3,9 +3,9 @@ module App
 open Feliz
 open Elmish
 open Elmish.React
-open App.Components.TournamentContainer
-open App.Context
-open App.State
+open Components.TournamentContainer
+open Context
+open State
 
 Fable.Core.JsInterop.importSideEffects "./App.scss"
 

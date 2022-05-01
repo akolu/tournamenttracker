@@ -1,4 +1,4 @@
-module App.State
+module State
 
 open Tournament.Tournament
 open Tournament.Utils

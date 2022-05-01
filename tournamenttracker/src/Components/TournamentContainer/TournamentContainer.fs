@@ -1,14 +1,14 @@
-module App.Components.TournamentContainer
+module Components.TournamentContainer
 
 open Feliz
 open Fable.FontAwesome
 open Fable.FontAwesome.Free
-open App.Components.Tabs
-open App.Components.Settings
-open App.Components.Round
+open Components.Tabs
+open Components.Settings
+open Components.Round
 open Feliz.Bulma
-open App.State
-open App.Context
+open State
+open Context
 
 Fable.Core.JsInterop.importSideEffects "./TournamentContainer.scss"
 

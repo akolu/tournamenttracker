@@ -1,8 +1,8 @@
-module App.Context
+module Context
 
 open Elmish
 open Feliz
-open App.State
+open State
 
 type ContextProps = State * (Action -> unit)
 

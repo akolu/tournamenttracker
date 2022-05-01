@@ -1,4 +1,4 @@
-module App.Components.Tabs
+module Components.Tabs
 
 open Feliz
 open Feliz.Bulma

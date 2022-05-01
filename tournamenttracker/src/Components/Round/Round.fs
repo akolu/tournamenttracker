@@ -1,10 +1,10 @@
-module App.Components.Round
+module Components.Round
 
 open Feliz
 open Feliz.Bulma
 open Fable.FontAwesome
-open App.Context
-open App.State
+open Context
+open State
 open Tournament.Round
 open Tournament.Pairing
 open Tournament.PairingGenerator
