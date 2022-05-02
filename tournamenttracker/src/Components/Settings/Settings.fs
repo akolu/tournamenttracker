@@ -134,6 +134,7 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                                 prop.onKeyDown printPlayers
                                                 prop.onChange (fun (ev: string) -> playerNameChanged i ev)
                                                 prop.placeholder "Player name"
+                                                prop.defaultValue (fst players.[i])
                                             ]
                                             // Bulma.input.text [
                                             //     input.isRounded

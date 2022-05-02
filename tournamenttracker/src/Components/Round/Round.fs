@@ -16,8 +16,8 @@ Fable.Core.JsInterop.importSideEffects "./Round.scss"
 [<ReactComponent>]
 let Pairing
     (props: {| pairing: Pairing
-               editable: bool
-               onEdit: Browser.Types.MouseEvent -> unit
+               editing: bool
+               onEdit: bool -> unit
                onCancel: unit -> unit
                onConfirm: (int * int) -> unit |})
     =
@@ -26,7 +26,6 @@ let Pairing
     let (p2Score, setP2Score) = React.useState (props.pairing.Player2Score)
 
     let mutable p1Ref = React.useRef<Browser.Types.Element> (null)
-    let mutable p2Ref = React.useRef<Browser.Types.Element> (null)
 
     let handleKeyDown (e: KeyboardEvent) =
         match e.key with
@@ -36,62 +35,54 @@ let Pairing
 
     let focusP1Input =
         (fun _ ->
-            if props.editable then
+            if props.editing then
                 (unbox<HTMLInputElement> p1Ref.current).select ())
 
-    React.useEffect (focusP1Input, [| box props.editable |])
+    React.useEffect (focusP1Input, [| box props.editing |])
 
-    let score (num: int) (ref: Browser.Types.Element -> unit) (onChange: int -> unit) =
-        if props.editable then
-            Html.input [
-                prop.ref ref
-                prop.type' "number"
-                prop.onChange onChange
-                prop.onKeyDown handleKeyDown
-                prop.inputMode.numeric
-                prop.pattern (System.Text.RegularExpressions.Regex "[0-9]*")
-                input.isSmall
-                prop.defaultValue num
-            ]
+    let score (num: int) (inputProps: IReactProperty list) =
+        if props.editing then
+            Html.input (
+                [ prop.type' "number"
+                  prop.onKeyDown handleKeyDown
+                  prop.inputMode.numeric
+                  prop.pattern (System.Text.RegularExpressions.Regex "[0-9]*")
+                  input.isSmall
+                  prop.defaultValue num ]
+                @ inputProps
+            )
         elif props.pairing.IsScored then
             Html.b num
         else
             Html.span "-"
 
     Html.div [
-        prop.onClick (fun e ->
-            if not props.editable then
-                props.onEdit e
+        prop.classes [
+            if props.editing then
+                "Pairing__div--clickable"
             else
-                ())
+                ""
+        ]
+        prop.onClick (fun _ -> props.onEdit props.editing)
         prop.children [
             Html.span props.pairing.Number
             Html.span props.pairing.Player1
             Html.span [
-                prop.key "foo"
-                prop.children (score props.pairing.Player1Score (fun node -> p1Ref.current <- node) setP1Score)
+                prop.children (
+                    score
+                        props.pairing.Player1Score
+                        [ prop.ref (fun node -> p1Ref.current <- node)
+                          prop.onChange setP1Score ]
+                )
             ]
             Html.span props.pairing.Player2
             Html.span [
-                prop.key "bar"
-                prop.children (score props.pairing.Player2Score (fun node -> p2Ref.current <- node) setP2Score)
+                prop.children (score props.pairing.Player2Score [ prop.onChange setP2Score ])
             ]
             Html.span [
                 prop.children [
-                    // Html.button [
-                    //     prop.hidden props.editable
-                    //     prop.onClick props.onEdit
-                    //     prop.children [
-                    //         Html.i [
-                    //             prop.classes [
-                    //                 "fa-regular"
-                    //                 "fa-pen-to-square"
-                    //             ]
-                    //         ]
-                    //     ]
-                    // ]
                     Html.button [
-                        prop.hidden (not props.editable)
+                        prop.hidden (not props.editing)
                         prop.onClick (fun _ -> props.onCancel ())
                         prop.children [
                             Html.i [
@@ -100,7 +91,7 @@ let Pairing
                         ]
                     ]
                     Html.button [
-                        prop.hidden (not props.editable)
+                        prop.hidden (not props.editing)
                         prop.onClick (fun _ -> props.onConfirm (p1Score, p2Score))
                         prop.children [
                             (Fa.i [ Fa.Solid.Check ] [])
@@ -120,27 +111,16 @@ let Round (round: Round) =
     let markPairingScored table result =
         dispatch (Score {| nr = table; result = result |})
 
+    let handlePairingClicked p editing =
+        if round.Status = Ongoing && not editing then
+            setEditablePairing (Some p)
+        else
+            ()
+
     let actions =
         match round.Status with
         | Pregame ->
             [ Bulma.button.button [
-                  button.isSmall
-                  button.isRounded
-                  prop.onClick (fun _ -> dispatch (MakePairings round.Number))
-                  prop.className "Round__button--save"
-                  prop.children [
-                      Bulma.icon (
-                          Html.i [
-                              prop.classes [
-                                  "fas"
-                                  "fa-people-arrows-left-right"
-                              ]
-                          ]
-                      )
-                      Html.b "Pair"
-                  ]
-              ]
-              Bulma.button.button [
                   button.isSmall
                   button.isRounded
                   prop.onClick (fun _ -> dispatch StartRound)
@@ -166,7 +146,13 @@ let Round (round: Round) =
 
     let pairings =
         Html.div [
-            prop.className "Round__div--pairings"
+            prop.classes [
+                "Round__pairings_grid-wrapper"
+                match round.Status with
+                | Pregame -> "Round__div--pregame"
+                | Ongoing -> "Round__div--ongoing"
+                | _ -> ""
+            ]
             prop.children (
                 [ Html.div [
                       prop.children [
@@ -181,8 +167,8 @@ let Round (round: Round) =
                    |> List.map (fun p ->
                        Pairing(
                            {| pairing = p
-                              editable = ((=) editablePairing (Some p))
-                              onEdit = (fun _ -> setEditablePairing (Some p))
+                              editing = ((=) editablePairing (Some p))
+                              onEdit = (fun edit -> handlePairingClicked p edit)
                               onCancel = (fun _ -> setEditablePairing None)
                               onConfirm = markPairingScored p.Number |}
                        )))
@@ -190,13 +176,14 @@ let Round (round: Round) =
         ]
 
     Html.div [
-        prop.className "Round__div--root"
+        prop.className "Round__root"
         prop.children [
             Bulma.columns [
                 prop.children [
                     Bulma.column [
+                        prop.className "Round__pairings-root"
                         column.isTwoThirds
-                        prop.children (actions @ [ pairings ])
+                        prop.children ([ pairings ] @ [ Html.span actions ])
                     ]
                     Bulma.column [
                         column.isOneThird

@@ -1,21 +1,20 @@
-.Round__div--root {
+.Round__root {
     flex: 1;
 
     & button {
         margin-right: .5rem;
     }
+
+    & .Round__pairings-root {
+        display: grid;
+        grid-template-rows: auto 30px;
+    }
 }
 
-.Round__div--pairings {
+.Round__pairings_grid-wrapper {
     
     & > div:not(:first-child):nth-child(odd){
         background: whitesmoke;
-    }
-
-    & > div:not(:first-child):hover {
-        cursor: pointer;
-        background-color: aliceblue;
-        // text-decoration: underline;
     }
 
     & > div {
@@ -52,5 +51,20 @@
                 margin-left: .5rem;
             }
         }
+    }
+}
+
+// .Round__div--pregame {
+//     & > div:not(:first-child) {
+//         & > span:nth-child(2):hover, & > span:nth-child(4):hover {
+//             background-color: aliceblue;
+//         }
+//     }
+// }
+
+.Round__div--ongoing {
+    & > div:not(:first-child):hover {
+        cursor: pointer;
+        background-color: aliceblue;
     }
 }

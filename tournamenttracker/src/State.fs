@@ -16,7 +16,6 @@ type TournamentSettings =
 
 type Action =
     | CreateTournament of TournamentSettings
-    | MakePairings of int
     | StartRound
     | FinishRound
     | Score of {| nr: int; result: int * int |}
@@ -27,15 +26,18 @@ let createTournament settings =
     >>= pair Shuffle
     |> unwrap
 
-let getAlg rnd =
-    match rnd with
-    | 1 -> Shuffle
-    | _ -> Swiss
+let nextRound tournament =
+    tournament
+    |> finishRound
+    >>= (fun t ->
+        match t.CurrentRound with
+        | Some _ -> pair Swiss t
+        | None -> Ok t)
+    |> unwrap
 
 let update (msg: Action) (state: State) =
     match msg with
     | CreateTournament settings -> { state with Tournament = createTournament settings }, Cmd.none
-    | MakePairings rnd -> { state with Tournament = state.Tournament |> pair (getAlg rnd) |> unwrap }, Cmd.none
     | StartRound -> { state with Tournament = state.Tournament |> startRound |> unwrap }, Cmd.none
-    | FinishRound -> { state with Tournament = state.Tournament |> finishRound |> unwrap }, Cmd.none
+    | FinishRound -> { state with Tournament = state.Tournament |> nextRound }, Cmd.none
     | Score p -> { state with Tournament = state.Tournament |> score p.nr p.result |> unwrap }, Cmd.none

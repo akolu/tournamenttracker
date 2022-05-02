@@ -8,8 +8,7 @@ open Tournament.Pairing
 type Tournament =
     { Rounds: Round list
       Players: string list }
-    member private this.CurrentRound =
-        List.tryFind (fun rnd -> rnd.Status <> Finished) this.Rounds
+    member this.CurrentRound = List.tryFind (fun rnd -> rnd.Status <> Finished) this.Rounds
 
     member internal this.ModifyCurrentRound(fn: Round -> Result<Round, string>) =
         match this.CurrentRound with
