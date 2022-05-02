@@ -20,3 +20,15 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts/";
 div.divider {
     margin: .6rem 0;
 }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}

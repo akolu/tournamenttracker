@@ -18,9 +18,9 @@ let TournamentContainer () =
     let (state, dispatch) = React.useContext (tournamentContext)
     let (tab, setTab) = React.useState (0)
 
-    let onTournamentCreated settings =
-        dispatch (CreateTournament settings)
-        setTab (1)
+
+
+    let onTournamentCreated settings = dispatch (CreateTournament settings)
 
     let getActiveTab =
         match tab with

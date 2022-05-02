@@ -8,6 +8,8 @@ open State
 open Tournament.Round
 open Tournament.Pairing
 open Tournament.PairingGenerator
+open Browser.Types
+open Browser.Dom
 
 Fable.Core.JsInterop.importSideEffects "./Round.scss"
 
@@ -16,27 +18,45 @@ let Pairing
     (props: {| pairing: Pairing
                editable: bool
                onEdit: Browser.Types.MouseEvent -> unit
-               onCancel: Browser.Types.MouseEvent -> unit
+               onCancel: unit -> unit
                onConfirm: (int * int) -> unit |})
     =
 
     let (p1Score, setP1Score) = React.useState (props.pairing.Player1Score)
     let (p2Score, setP2Score) = React.useState (props.pairing.Player2Score)
 
-    let score (num: int) (onChange: int -> unit) =
+    let mutable p1Ref = React.useRef<Browser.Types.Element> (null)
+    let mutable p2Ref = React.useRef<Browser.Types.Element> (null)
+
+    let handleKeyDown (e: KeyboardEvent) =
+        match e.key with
+        | "Enter" -> props.onConfirm (p1Score, p2Score)
+        | "Escape" -> props.onCancel ()
+        | _ -> ()
+
+    let focusP1Input =
+        (fun _ ->
+            if props.editable then
+                (unbox<HTMLInputElement> p1Ref.current).select ())
+
+    React.useEffect (focusP1Input, [| box props.editable |])
+
+    let score (num: int) (ref: Browser.Types.Element -> unit) (onChange: int -> unit) =
         if props.editable then
             Html.input [
-                prop.onChange onChange
+                prop.ref ref
                 prop.type' "number"
+                prop.onChange onChange
+                prop.onKeyDown handleKeyDown
+                prop.inputMode.numeric
+                prop.pattern (System.Text.RegularExpressions.Regex "[0-9]*")
                 input.isSmall
                 prop.defaultValue num
-                prop.min 0
-                prop.max 20
             ]
         elif props.pairing.IsScored then
             Html.b num
         else
-            Html.b ""
+            Html.span "-"
 
     Html.div [
         prop.onClick (fun e ->
@@ -46,17 +66,15 @@ let Pairing
                 ())
         prop.children [
             Html.span props.pairing.Number
+            Html.span props.pairing.Player1
             Html.span [
-                prop.children [
-                    Html.span props.pairing.Player1
-                    score p1Score setP1Score
-                ]
+                prop.key "foo"
+                prop.children (score props.pairing.Player1Score (fun node -> p1Ref.current <- node) setP1Score)
             ]
+            Html.span props.pairing.Player2
             Html.span [
-                prop.children [
-                    Html.span props.pairing.Player2
-                    score p2Score setP2Score
-                ]
+                prop.key "bar"
+                prop.children (score props.pairing.Player2Score (fun node -> p2Ref.current <- node) setP2Score)
             ]
             Html.span [
                 prop.children [
@@ -74,7 +92,7 @@ let Pairing
                     // ]
                     Html.button [
                         prop.hidden (not props.editable)
-                        prop.onClick props.onCancel
+                        prop.onClick (fun _ -> props.onCancel ())
                         prop.children [
                             Html.i [
                                 prop.classes [ "fa"; "fa-xmark" ]
@@ -154,7 +172,9 @@ let Round (round: Round) =
                       prop.children [
                           Html.b "Table"
                           Html.b "Player 1"
+                          Html.b "Score"
                           Html.b "Player 2"
+                          Html.b "Score"
                       ]
                   ] ]
                 @ (round.Pairings

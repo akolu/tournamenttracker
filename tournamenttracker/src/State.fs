@@ -24,6 +24,7 @@ type Action =
 let createTournament settings =
     createTournament settings.Rounds
     >>= addPlayers (settings.Players |> List.map (fun p -> fst p))
+    >>= pair Shuffle
     |> unwrap
 
 let getAlg rnd =
