@@ -4,11 +4,6 @@
     & button {
         margin-right: .5rem;
     }
-
-    & .Round__pairings-root {
-        display: grid;
-        grid-template-rows: auto 30px;
-    }
 }
 
 .Round__pairings_grid-wrapper {
@@ -19,7 +14,7 @@
 
     & > div {
         display: grid;
-        grid-template-columns: 1.5fr 2fr 2fr 2fr 2fr 60px;
+        grid-template-columns: 1.5fr 2fr 2fr 2fr 2fr;
 
         :nth-child(3), :nth-child(5) {
             display: flex;
@@ -35,10 +30,6 @@
     
         & span {
             display: flex;
-        }
-
-        & span:last-child {
-            justify-content: end;
         }
 
         button {

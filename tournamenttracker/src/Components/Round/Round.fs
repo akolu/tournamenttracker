@@ -7,31 +7,24 @@ open Context
 open State
 open Tournament.Round
 open Tournament.Pairing
-open Tournament.PairingGenerator
 open Browser.Types
-open Browser.Dom
 
 Fable.Core.JsInterop.importSideEffects "./Round.scss"
+
+type PairingAction =
+    | Click
+    | KeyPress of KeyboardEvent
+    | SetPlayer1Score of Event
+    | SetPlayer2Score of Event
 
 [<ReactComponent>]
 let Pairing
     (props: {| pairing: Pairing
                editing: bool
-               onEdit: bool -> unit
-               onCancel: unit -> unit
-               onConfirm: (int * int) -> unit |})
+               handleAction: PairingAction -> unit |})
     =
 
-    let (p1Score, setP1Score) = React.useState (props.pairing.Player1Score)
-    let (p2Score, setP2Score) = React.useState (props.pairing.Player2Score)
-
     let mutable p1Ref = React.useRef<Browser.Types.Element> (null)
-
-    let handleKeyDown (e: KeyboardEvent) =
-        match e.key with
-        | "Enter" -> props.onConfirm (p1Score, p2Score)
-        | "Escape" -> props.onCancel ()
-        | _ -> ()
 
     let focusP1Input =
         (fun _ ->
@@ -44,7 +37,7 @@ let Pairing
         if props.editing then
             Html.input (
                 [ prop.type' "number"
-                  prop.onKeyDown handleKeyDown
+                  prop.onKeyDown (fun e -> props.handleAction (KeyPress e))
                   prop.inputMode.numeric
                   prop.pattern (System.Text.RegularExpressions.Regex "[0-9]*")
                   input.isSmall
@@ -63,7 +56,7 @@ let Pairing
             else
                 ""
         ]
-        prop.onClick (fun _ -> props.onEdit props.editing)
+        prop.onClick (fun _ -> props.handleAction Click)
         prop.children [
             Html.span props.pairing.Number
             Html.span props.pairing.Player1
@@ -72,32 +65,16 @@ let Pairing
                     score
                         props.pairing.Player1Score
                         [ prop.ref (fun node -> p1Ref.current <- node)
-                          prop.onChange setP1Score ]
+                          prop.onChange (fun num -> (props.handleAction (SetPlayer1Score num))) ]
                 )
             ]
             Html.span props.pairing.Player2
             Html.span [
-                prop.children (score props.pairing.Player2Score [ prop.onChange setP2Score ])
-            ]
-            Html.span [
-                prop.children [
-                    Html.button [
-                        prop.hidden (not props.editing)
-                        prop.onClick (fun _ -> props.onCancel ())
-                        prop.children [
-                            Html.i [
-                                prop.classes [ "fa"; "fa-xmark" ]
-                            ]
-                        ]
-                    ]
-                    Html.button [
-                        prop.hidden (not props.editing)
-                        prop.onClick (fun _ -> props.onConfirm (p1Score, p2Score))
-                        prop.children [
-                            (Fa.i [ Fa.Solid.Check ] [])
-                        ]
-                    ]
-                ]
+                prop.children (
+                    score
+                        props.pairing.Player2Score
+                        [ prop.onChange (fun num -> props.handleAction (SetPlayer2Score num)) ]
+                )
             ]
         ]
     ]
@@ -106,31 +83,74 @@ let Pairing
 let Round (round: Round) =
 
     let (state, dispatch) = React.useContext (tournamentContext)
-    let (editablePairing, setEditablePairing) = React.useState<option<Pairing>> (None)
+    let (editing, setEditing) = React.useState<option<int>> (None)
+    let (score, setScore) = React.useState<option<int * (int * int)>> (None)
 
-    let markPairingScored table result =
-        dispatch (Score {| nr = table; result = result |})
+    let markPairingScored s =
+        dispatch (Score {| nr = fst s; result = snd s |})
+        setScore None
 
-    let handlePairingClicked p editing =
-        if round.Status = Ongoing && not editing then
-            setEditablePairing (Some p)
-        else
-            ()
+    React.useEffect (
+        (fun _ ->
+            match score with
+            | Some s -> setEditing (Some(fst s))
+            | _ -> setEditing (None)),
+        [| box score |]
+    )
+
+    let getVal (e: Event) =
+        match System.Int32.TryParse (unbox<HTMLInputElement> e.target).value with
+        | (true, v) -> v
+        | _ -> 0
+
+    let handlePairingAction action p =
+        match action, score with
+        | (Click, _) when round.Status = Ongoing -> setScore (Some(p.Number, (p.Player1Score, p.Player2Score)))
+        | (KeyPress e, Some s) ->
+            match e.key with
+            | "Enter" -> markPairingScored s
+            | "Escape" -> setScore None
+            | _ -> ()
+        | (SetPlayer1Score e, Some s) -> setScore (Some(fst s, (getVal e, snd (snd s))))
+        | (SetPlayer2Score e, Some s) -> setScore (Some(fst s, (fst (snd s), getVal e)))
+        | _ -> ()
 
     let actions =
-        match round.Status with
-        | Pregame ->
+        match round.Status, score with
+        | (Pregame, _) ->
             [ Bulma.button.button [
                   button.isSmall
                   button.isRounded
                   prop.onClick (fun _ -> dispatch StartRound)
-                  prop.className "Round__button--start"
                   prop.children [
                       Bulma.icon (Fa.i [ Fa.Solid.Play ] [])
                       Html.b "Start round"
                   ]
               ] ]
-        | Ongoing ->
+        | (Ongoing, Some s) ->
+            [ Bulma.button.button [
+                  button.isSmall
+                  button.isRounded
+                  prop.onClick (fun _ -> setScore None)
+                  prop.children [
+                      Bulma.icon (
+                          Html.i [
+                              prop.classes [ "fa"; "fa-xmark" ]
+                          ]
+                      )
+                      Html.b "Cancel"
+                  ]
+              ]
+              Bulma.button.button [
+                  button.isSmall
+                  button.isRounded
+                  prop.onClick (fun _ -> markPairingScored s)
+                  prop.children [
+                      Bulma.icon (Fa.i [ Fa.Solid.Check ] [])
+                      Html.b "Confirm"
+                  ]
+              ] ]
+        | (Ongoing, None) ->
             [ Bulma.button.button [
                   button.isSmall
                   button.isRounded
@@ -142,7 +162,7 @@ let Round (round: Round) =
                       Html.b "Finish round"
                   ]
               ] ]
-        | Finished -> []
+        | (Finished, _) -> []
 
     let pairings =
         Html.div [
@@ -167,10 +187,8 @@ let Round (round: Round) =
                    |> List.map (fun p ->
                        Pairing(
                            {| pairing = p
-                              editing = ((=) editablePairing (Some p))
-                              onEdit = (fun edit -> handlePairingClicked p edit)
-                              onCancel = (fun _ -> setEditablePairing None)
-                              onConfirm = markPairingScored p.Number |}
+                              editing = ((=) editing (Some p.Number))
+                              handleAction = (fun a -> handlePairingAction a p) |}
                        )))
             )
         ]
@@ -183,7 +201,10 @@ let Round (round: Round) =
                     Bulma.column [
                         prop.className "Round__pairings-root"
                         column.isTwoThirds
-                        prop.children ([ pairings ] @ [ Html.span actions ])
+                        prop.children [
+                            Bulma.Divider.divider "Pairings"
+                            pairings
+                        ]
                     ]
                     Bulma.column [
                         column.isOneThird
@@ -198,5 +219,6 @@ let Round (round: Round) =
                     ]
                 ]
             ]
+            Html.span actions
         ]
     ]
