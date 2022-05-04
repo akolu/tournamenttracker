@@ -13,9 +13,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TournamentTracker.fs" />
+    <Compile Include="Components/Settings/Settings.fs" />
     <Compile Include="State.fs" />
     <Compile Include="Context.fs" />
-    <Compile Include="Components/Settings/Settings.fs" />
     <Compile Include="Components/Round/Round.fs" />
     <Compile Include="Components/Results/Results.fs" />
     <Compile Include="Components/Tabs/Tabs.fs" />

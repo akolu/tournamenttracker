@@ -3,9 +3,43 @@ module Components.Settings
 open Feliz
 open Feliz.Bulma
 open Fable.FontAwesome
-open State
+open Elmish
+// open State
 
 Fable.Core.JsInterop.importSideEffects "./Settings.scss"
+
+
+type SettingsModel =
+    { Rounds: int
+      Players: (string * int) list }
+
+type SettingsMsg =
+    | AddRounds
+    | RemoveRounds
+    | AddPlayers
+    | RemovePlayers
+    | EditPlayerName of (int * string)
+    | Confirm of SettingsModel
+
+let init () = { Rounds = 0; Players = [] }, Cmd.none
+
+let update msg model =
+    match msg with
+    | AddRounds when model.Rounds < 9 -> { model with Rounds = model.Rounds + 1 }, Cmd.none
+    | AddRounds -> model, Cmd.none
+    | RemoveRounds when model.Rounds > 1 -> { model with Rounds = model.Rounds - 1 }, Cmd.none
+    | RemoveRounds -> model, Cmd.none
+    | AddPlayers -> { model with Players = model.Players @ [ ("", 0) ] }, Cmd.none
+    | RemovePlayers when model.Players.Length > 1 ->
+        { model with Players = model.Players.[.. model.Players.Length - 2] }, Cmd.none
+    | RemovePlayers -> model, Cmd.none
+    | EditPlayerName (index, name) ->
+        { model with
+            Players =
+                model.Players
+                |> List.mapi (fun i p -> if i = index then (name, snd p) else p) },
+        Cmd.none
+    | Confirm _ -> model, Cmd.none
 
 [<ReactComponent>]
 let private IconButton (icon: Fa.IconOption, fn: Browser.Types.MouseEvent -> unit) =
@@ -19,47 +53,7 @@ let private IconButton (icon: Fa.IconOption, fn: Browser.Types.MouseEvent -> uni
         ]
     ]
 
-type private IconButtonAction =
-    | IncRounds
-    | DecRounds
-    | IncPlayers
-    | DecPlayers
-
-[<ReactComponent>]
-let Settings (onCreate: TournamentSettings -> unit) =
-
-    let (rounds, setRounds) = React.useState (5)
-
-    let (players, setPlayers) =
-        React.useState [
-            ("Aku Ankka", 0)
-            ("Mikki Hiiri", 0)
-            ("Pelle Peloton", 0)
-            ("Hessu Hopo", 0)
-            ("Poliisimestari Sisu", 0)
-        ]
-
-    let iconClick action =
-        (fun _ ->
-            match action with
-            | DecRounds when rounds > 1 -> setRounds (rounds - 1)
-            | IncRounds when rounds < 9 -> setRounds (rounds + 1)
-            | IncPlayers -> setPlayers (players |> List.append [ ("", 0) ])
-            | DecPlayers when players.Length > 1 -> setPlayers (players.[.. players.Length - 2])
-            | DecPlayers when players.Length = 1 -> setPlayers ([ "", 0 ])
-            | _ -> ())
-
-    let playerNameChanged index name =
-        setPlayers (
-            players
-            |> List.mapi (fun i p -> if i = index then (name, snd p) else p)
-        )
-
-    let printPlayers (event: Browser.Types.KeyboardEvent) =
-        if event.key = "Enter" then
-            players
-            |> Seq.iter (fun p -> System.Console.WriteLine(fst p + ": " + (snd p).ToString()))
-
+let SettingsView (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
     Html.div [
         prop.className "Settings__div--root"
         prop.children [
@@ -86,9 +80,9 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            IconButton(Fa.Solid.Minus, iconClick DecRounds)
-                                            Html.div rounds
-                                            IconButton(Fa.Solid.Plus, iconClick IncRounds)
+                                            IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemoveRounds))
+                                            Html.div state.Rounds
+                                            IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddRounds))
                                         ]
                                     ]
                                 ]
@@ -100,9 +94,9 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            IconButton(Fa.Solid.Minus, iconClick DecPlayers)
-                                            Html.div players.Length
-                                            IconButton(Fa.Solid.Plus, iconClick IncPlayers)
+                                            IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemovePlayers))
+                                            Html.div state.Players.Length
+                                            IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddPlayers))
                                         ]
                                     ]
                                 ]
@@ -110,7 +104,7 @@ let Settings (onCreate: TournamentSettings -> unit) =
                             Bulma.button.button [
                                 button.isSmall
                                 button.isRounded
-                                prop.onClick (fun _ -> onCreate { Rounds = rounds; Players = players })
+                                prop.onClick (fun _ -> dispatch (Confirm state))
                                 prop.className "Settings__button--save"
                                 prop.children [
                                     Bulma.icon (Fa.i [ Fa.Solid.Save ] [])
@@ -123,7 +117,7 @@ let Settings (onCreate: TournamentSettings -> unit) =
                         prop.children [
                             Bulma.Divider.divider "Players"
                             Html.div (
-                                players
+                                state.Players
                                 |> List.mapi (fun i p ->
                                     Html.div [
                                         prop.className "Settings__Players--inputwrapper"
@@ -131,10 +125,9 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                             Bulma.input.text [
                                                 input.isRounded
                                                 input.isSmall
-                                                prop.onKeyDown printPlayers
-                                                prop.onChange (fun (ev: string) -> playerNameChanged i ev)
+                                                prop.onChange (fun (ev: string) -> dispatch (EditPlayerName(i, ev)))
                                                 prop.placeholder "Player name"
-                                                prop.defaultValue (fst players.[i])
+                                                prop.defaultValue (fst p)
                                             ]
                                             // Bulma.input.text [
                                             //     input.isRounded

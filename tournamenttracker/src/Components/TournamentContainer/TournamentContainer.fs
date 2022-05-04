@@ -4,7 +4,6 @@ open Feliz
 open Fable.FontAwesome
 open Fable.FontAwesome.Free
 open Components.Tabs
-open Components.Settings
 open Components.Round
 open Components.Results
 open Feliz.Bulma
@@ -28,11 +27,9 @@ let TournamentContainer () =
         [| unbox state.Tournament.CurrentRound |]
     )
 
-    let onTournamentCreated settings = dispatch (CreateTournament settings)
-
     let getActiveTab =
         match tab with
-        | 0 -> Settings(onTournamentCreated)
+        | 0 -> Settings.SettingsView state.Settings (SettingsMsg >> dispatch)
         | num when num > state.Tournament.Rounds.Length -> Results()
         | num ->
             Round(
