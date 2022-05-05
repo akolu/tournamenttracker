@@ -29,7 +29,7 @@ let TournamentContainer () =
 
     let getActiveTab =
         match tab with
-        | 0 -> Settings.SettingsView state.Settings (SettingsMsg >> dispatch)
+        | 0 -> Settings.View.view state.Settings (SettingsMsg >> dispatch)
         | num when num > state.Tournament.Rounds.Length -> Results()
         | num ->
             Round(

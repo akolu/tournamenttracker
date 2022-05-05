@@ -3,21 +3,22 @@ module State
 open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
+open Settings.State
 open Elmish
 
 type State =
     { Tournament: Tournament
-      Settings: Components.Settings.SettingsModel }
+      Settings: SettingsModel }
 
 type Action =
     // | CreateTournament of TournamentSettings
     | StartRound
     | FinishRound
     | Score of {| nr: int; result: int * int |}
-    | SettingsMsg of Components.Settings.SettingsMsg
+    | SettingsMsg of SettingsMsg
 
 let state () =
-    let settings, settingsCmd = Components.Settings.init ()
+    let settings, settingsCmd = init ()
 
     { Tournament = { Rounds = []; Players = [] }
       Settings = settings },
@@ -25,7 +26,7 @@ let state () =
         Cmd.map SettingsMsg settingsCmd
     ]
 
-let createTournament (settings: Components.Settings.SettingsModel) =
+let createTournament (settings: SettingsModel) =
     createTournament settings.Rounds
     >>= addPlayers (settings.Players |> List.map (fun p -> fst p))
     >>= pair Shuffle
@@ -48,7 +49,7 @@ let update (msg: Action) (state: State) =
     | Score p -> { state with Tournament = state.Tournament |> score p.nr p.result |> unwrap }, Cmd.none
     | SettingsMsg msg' ->
         match msg' with
-        | Components.Settings.SettingsMsg.Confirm model -> { state with Tournament = createTournament model }, Cmd.none
+        | Confirm model -> { state with Tournament = createTournament model }, Cmd.none
         | _ ->
-            let res, cmd = Components.Settings.update msg' state.Settings
+            let res, cmd = update msg' state.Settings
             { state with Settings = res }, Cmd.map SettingsMsg cmd
