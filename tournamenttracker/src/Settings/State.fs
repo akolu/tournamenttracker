@@ -1,6 +1,7 @@
 module Settings.State
 
 open Elmish
+open Tournament.Tournament
 
 type SettingsModel =
     { Rounds: int
@@ -12,9 +13,12 @@ type SettingsMsg =
     | AddPlayers
     | RemovePlayers
     | EditPlayerName of (int * string)
-    | Confirm of SettingsModel
+    | Confirm
 
-let init () = { Rounds = 0; Players = [] }, Cmd.none
+let init rounds players =
+    { Rounds = rounds
+      Players = players |> List.map (fun p -> (p, 0)) },
+    Cmd.none
 
 let update msg model =
     match msg with
@@ -32,4 +36,4 @@ let update msg model =
                 model.Players
                 |> List.mapi (fun i p -> if i = index then (name, snd p) else p) },
         Cmd.none
-    | Confirm _ -> model, Cmd.none
+    | Confirm -> model, Cmd.none

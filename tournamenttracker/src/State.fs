@@ -3,53 +3,109 @@ module State
 open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
-open Settings.State
 open Elmish
+open System
+
+type PageModel =
+    | Settings of Settings.State.SettingsModel
+    | Round of Round.State.RoundModel
+    | Results
+
+type Page =
+    { Index: int
+      Model: PageModel }
+    static member settings p =
+        match p with
+        | Settings s -> s
+        | _ -> raise (Exception("Could not coerce Page to Settings"))
+
+    static member round p =
+        match p with
+        | Round r -> r
+        | _ -> raise (Exception("Could not coerce Page to Round"))
 
 type State =
     { Tournament: Tournament
-      Settings: SettingsModel }
+      CurrentPage: Page }
 
 type Action =
-    // | CreateTournament of TournamentSettings
-    | StartRound
-    | FinishRound
     | Score of {| nr: int; result: int * int |}
-    | SettingsMsg of SettingsMsg
+    | SetActivePage of int
+    | SettingsMsg of Settings.State.SettingsMsg
+    | RoundMsg of Round.State.RoundMsg
 
 let state () =
-    let settings, settingsCmd = init ()
+    let settings, settingsCmd = Settings.State.init 1 [ "Foo"; "Bar" ]
 
     { Tournament = { Rounds = []; Players = [] }
-      Settings = settings },
+      CurrentPage = { Index = 0; Model = Settings settings } },
     Cmd.batch [
         Cmd.map SettingsMsg settingsCmd
     ]
 
-let createTournament (settings: SettingsModel) =
+let private getActivePage i t =
+    match i with
+    | 0 ->
+        { Index = 0
+          Model = Settings(fst (Settings.State.init t.Rounds.Length t.Players)) }
+    | num when num > t.Rounds.Length -> { Index = num; Model = Results }
+    | num ->
+        { Index = num
+          Model = Round(fst (Round.State.init (t.Rounds |> List.find (fun r -> r.Number = num)))) }
+
+let createTournament (settings: Settings.State.SettingsModel) state =
     createTournament settings.Rounds
     >>= addPlayers (settings.Players |> List.map (fun p -> fst p))
     >>= pair Shuffle
     |> unwrap
+    |> (fun t ->
+        { state with
+            Tournament = t
+            CurrentPage = getActivePage (state.CurrentPage.Index) t })
 
-let nextRound tournament =
+let private updateTournament fn state =
+    state.Tournament
+    |> fn
+    |> unwrap
+    |> (fun t ->
+        { state with
+            Tournament = t
+            CurrentPage = getActivePage (state.CurrentPage.Index) t })
+
+let private nextRound tournament =
     tournament
     |> finishRound
     >>= (fun t ->
         match t.CurrentRound with
         | Some _ -> pair Swiss t
         | None -> Ok t)
-    |> unwrap
 
 let update (msg: Action) (state: State) =
     match msg with
-    // | CreateTournament settings -> { state with Tournament = createTournament settings }, Cmd.none
-    | StartRound -> { state with Tournament = state.Tournament |> startRound |> unwrap }, Cmd.none
-    | FinishRound -> { state with Tournament = state.Tournament |> nextRound }, Cmd.none
     | Score p -> { state with Tournament = state.Tournament |> score p.nr p.result |> unwrap }, Cmd.none
+    | SetActivePage tab -> { state with CurrentPage = getActivePage tab state.Tournament }, Cmd.none
     | SettingsMsg msg' ->
+        let res, cmd = Settings.State.update msg' (Page.settings state.CurrentPage.Model)
+
         match msg' with
-        | Confirm model -> { state with Tournament = createTournament model }, Cmd.none
-        | _ ->
-            let res, cmd = update msg' state.Settings
-            { state with Settings = res }, Cmd.map SettingsMsg cmd
+        | Settings.State.Confirm ->
+            createTournament res state,
+            Cmd.batch [
+                Cmd.map SettingsMsg cmd
+                Cmd.ofMsg (SetActivePage(state.CurrentPage.Index + 1))
+            ]
+        | _ -> { state with CurrentPage = { state.CurrentPage with Model = Settings res } }, Cmd.map SettingsMsg cmd
+    | RoundMsg msg' ->
+        let res, cmd = Round.State.update msg' (Page.round state.CurrentPage.Model)
+
+        match msg' with
+        | Round.State.StartRound -> updateTournament startRound state, Cmd.map RoundMsg cmd
+        | Round.State.FinishRound ->
+            updateTournament nextRound state,
+            Cmd.batch [
+                Cmd.map RoundMsg cmd
+                Cmd.ofMsg (SetActivePage(state.CurrentPage.Index + 1))
+            ]
+        | Round.State.ConfirmScore p ->
+            updateTournament (score p.Number (p.Player1Score, p.Player2Score)) state, Cmd.map RoundMsg cmd
+        | _ -> { state with CurrentPage = { state.CurrentPage with Model = Round res } }, Cmd.map RoundMsg cmd

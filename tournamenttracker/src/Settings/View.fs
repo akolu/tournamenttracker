@@ -8,7 +8,7 @@ open Components.IconButton
 
 Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 
-let view (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
+let root (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
     Html.div [
         prop.className "Settings__div--root"
         prop.children [
@@ -59,7 +59,7 @@ let view (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
                             Bulma.button.button [
                                 button.isSmall
                                 button.isRounded
-                                prop.onClick (fun _ -> dispatch (Confirm state))
+                                prop.onClick (fun _ -> dispatch Confirm)
                                 prop.className "Settings__button--save"
                                 prop.children [
                                     Bulma.icon (Fa.i [ Fa.Solid.Save ] [])

@@ -5,6 +5,8 @@ open Feliz.Bulma
 open Fable.FontAwesome
 open Elmish
 
+Fable.Core.JsInterop.importSideEffects "./IconButton.scss"
+
 [<ReactComponent>]
 let IconButton (icon: Fa.IconOption, fn: Browser.Types.MouseEvent -> unit) =
     Bulma.button.button [
