@@ -37,12 +37,11 @@ type Action =
 let state () =
     let settings, settingsCmd =
         Settings.State.init
-            1
+            3
             [ "Aku Ankka"
               "Mikki Hiiri"
               "Hessu Hopo"
-              "Pelle Peloton"
-              "Poliisimestari Sisu" ]
+              "Pelle Peloton" ]
 
     { Tournament = { Rounds = []; Players = [] }
       CurrentPage = { Index = 0; Model = Settings settings } },
@@ -58,7 +57,7 @@ let private getActivePage i t =
     | num when num > t.Rounds.Length -> { Index = num; Model = Results }
     | num ->
         { Index = num
-          Model = Round(fst (Round.State.init (t.Rounds |> List.find (fun r -> r.Number = num)))) }
+          Model = Round(fst (Round.State.init num t)) }
 
 let createTournament (settings: Settings.State.SettingsModel) state =
     createTournament settings.Rounds

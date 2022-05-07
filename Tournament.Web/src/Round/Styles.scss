@@ -1,3 +1,5 @@
+@import '../App.scss';
+
 .Round__root {
     flex: 1;
 
@@ -9,7 +11,7 @@
 .Round__pairings_grid-wrapper {
     
     & > div:not(:first-child):nth-child(odd){
-        background: whitesmoke;
+        background: $table_accent_color;
     }
 
     & > div {

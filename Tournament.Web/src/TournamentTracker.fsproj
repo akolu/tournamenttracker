@@ -14,6 +14,7 @@
   <ItemGroup>
     <Compile Include="TournamentTracker.fs" />
     <Compile Include="Components/IconButton/IconButton.fs" />
+    <Compile Include="Components/Standings/Standings.fs" />
     <Compile Include="Components/Results/Results.fs" />
     <Compile Include="Components/Tabs/Tabs.fs" />
     <Compile Include="Settings/State.fs" />

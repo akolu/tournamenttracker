@@ -1,0 +1,16 @@
+@import '../../App.scss';
+
+.Standings__root {
+    & > div {
+        display: grid;
+        grid-template-columns: 180px repeat(auto-fit, minmax(50px, 1fr));
+    
+        & > span:not(:first-of-type), & > b:not(:first-of-type) {
+            text-align: center;
+        }
+    }
+
+    & > div:nth-of-type(odd):not(:first-of-type) {
+        background-color: $table_accent_color;
+    }
+}

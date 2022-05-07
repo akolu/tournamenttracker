@@ -5,6 +5,7 @@ open Feliz.Bulma
 open Fable.FontAwesome
 open Tournament.Round
 open Tournament.Pairing
+open Components.Standings
 open Browser.Types
 open Round.State
 
@@ -174,11 +175,12 @@ let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
                         column.isOneThird
                         prop.children [
                             Bulma.Divider.divider "Standings"
-                            Html.div (
-                                state.Round.Standings
-                                |> List.map (fun s -> Html.div ((fst s) + " " + (snd s).ToString()))
-                            )
-                        ]
+                            Standings([ state.Round ], state.StandingsAcc)
+                            // Html.div (
+                            //     state.Round.Standings
+                            //     |> List.map (fun s -> Html.div ((fst s) + " " + (snd s).ToString()))
+                            // )
+                            ]
                     ]
                 ]
             ]

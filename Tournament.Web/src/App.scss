@@ -5,6 +5,8 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts/";
 @import "~@fortawesome/fontawesome-free/scss/solid.scss";
 @import "~@fortawesome/fontawesome-free/scss/regular.scss";
 
+$table_accent_color: whitesmoke;
+
 .elmish-app {
     display: flex;
     flex: 1;
