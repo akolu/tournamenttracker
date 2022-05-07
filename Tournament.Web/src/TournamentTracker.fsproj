@@ -26,6 +26,6 @@
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\tournamentlib\src\Tournament.fsproj" />
+    <ProjectReference Include="..\..\Tournament.Core\src\Tournament.fsproj" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@
   <ItemGroup>
     <Compile Include="Utils.fs" />
     <Compile Include="Pairing.fs" />
-    <Compile Include="Round.fs" />
+    <Compile Include="Round.fs" />  
     <Compile Include="PairingGenerator.fs" />
     <Compile Include="Tournament.fs" />
   </ItemGroup>
