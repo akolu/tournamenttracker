@@ -78,7 +78,7 @@ let private Pairing (pairing: Pairing) =
     ]
 
 [<ReactComponent>]
-let root (state: RoundModel) (dispatch: RoundMsg -> unit) =
+let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
     let actions =
         match state.Round.Status, state.Form with
         | (Pregame, _) ->
@@ -176,7 +176,6 @@ let root (state: RoundModel) (dispatch: RoundMsg -> unit) =
                             Bulma.Divider.divider "Standings"
                             Html.div (
                                 state.Round.Standings
-                                |> Map.toList
                                 |> List.map (fun s -> Html.div ((fst s) + " " + (snd s).ToString()))
                             )
                         ]

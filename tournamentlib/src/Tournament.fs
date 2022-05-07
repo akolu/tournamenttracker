@@ -50,7 +50,7 @@ type Tournament =
         this.Rounds
         |> List.filter (fun r -> r.Status <> Ongoing)
         |> List.map (fun r -> r.Standings)
-        |> List.fold (fun acc scores -> mergeMaps acc scores) players
+        |> List.fold (fun acc scores -> mergeMaps acc (Map.ofList scores)) players
         |> Map.toList
         |> List.sortBy (fun (_, score) -> -score)
 

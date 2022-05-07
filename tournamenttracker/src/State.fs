@@ -35,7 +35,14 @@ type Action =
     | RoundMsg of Round.State.RoundMsg
 
 let state () =
-    let settings, settingsCmd = Settings.State.init 1 [ "Foo"; "Bar" ]
+    let settings, settingsCmd =
+        Settings.State.init
+            1
+            [ "Aku Ankka"
+              "Mikki Hiiri"
+              "Hessu Hopo"
+              "Pelle Peloton"
+              "Poliisimestari Sisu" ]
 
     { Tournament = { Rounds = []; Players = [] }
       CurrentPage = { Index = 0; Model = Settings settings } },

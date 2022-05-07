@@ -1,9 +1,9 @@
 module Components.TournamentContainer
 
 open Feliz
-open Components.Tabs
-open Components
 open State
+open Components.Tabs
+open Components.Results
 open Context
 
 Fable.Core.JsInterop.importSideEffects "./TournamentContainer.scss"
@@ -15,9 +15,9 @@ let TournamentContainer () =
 
     let page =
         match state.CurrentPage.Model with
-        | Settings s -> Settings.View.root s (SettingsMsg >> dispatch)
-        | Round rnd -> Round.View.root rnd (RoundMsg >> dispatch)
-        | _ -> Html.span []
+        | Settings s -> Settings.View.Settings s (SettingsMsg >> dispatch)
+        | Round rnd -> Round.View.Round rnd (RoundMsg >> dispatch)
+        | _ -> Results()
 
     Html.div [
         prop.className "TournamentContainer__div--root"

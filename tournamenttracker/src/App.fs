@@ -16,5 +16,5 @@ let view (state: State) (dispatch: Action -> unit) =
 
 Program.mkProgram state update view
 |> Program.withReactSynchronous "elmish-app"
-|> Program.withConsoleTrace
+// |> Program.withConsoleTrace
 |> Program.run

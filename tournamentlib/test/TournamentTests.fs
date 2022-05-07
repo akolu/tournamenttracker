@@ -338,7 +338,7 @@ type TestClass() =
 
     [<Test>]
     [<Category("standings")>]
-    member this.``round standings are listed in map displaying names and scores``() =
+    member this.``round standings is a of players ordered by score``() =
         let round =
             { Number = 1
               Status = Finished
@@ -355,12 +355,10 @@ type TestClass() =
                     Player2Score = 5 } ] }
 
         CollectionAssert.AreEqual(
-            Map.ofList (
-                [ ("Bob", 16)
-                  ("James", 15)
-                  ("Michael", 5)
-                  ("Alice", 4) ]
-            ),
+            [ ("Bob", 16)
+              ("James", 15)
+              ("Michael", 5)
+              ("Alice", 4) ],
             round.Standings
         )
 

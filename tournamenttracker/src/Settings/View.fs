@@ -8,7 +8,7 @@ open Components.IconButton
 
 Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 
-let root (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
+let Settings (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
     Html.div [
         prop.className "Settings__div--root"
         prop.children [

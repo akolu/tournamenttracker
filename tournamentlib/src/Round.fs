@@ -18,7 +18,7 @@ type Round =
             [ (p.Player1, p.Player1Score)
               (p.Player2, p.Player2Score) ])
         |> List.concat
-        |> Map.ofList
+        |> List.sortBy (fun (_, score) -> -score)
 
 let private pairsToPairings pairs =
     pairs
