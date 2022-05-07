@@ -4,9 +4,8 @@ Next iteration of my yet-to-be-finished tournament tracker library, this time wi
 
 The repo consists of three projects:
 
-1. [tournamentlib](./tournamentlib/) is the core package for tournament tracking logic, written completely in F#
-2. [tournamenttracker](./tournamenttracker/) is a [Fable](https://fable.io) project that compiles the core package into js and provides an easy-to-use javascript interface for clients
-3. [tournamentweb](./tournamentweb/) is a web application that provides a simple UI for tracking tournaments by utilising the tournament-tracker Fable package (**very much WIP**)
+1. [Tournament.Core](./tournamentlib/) is the core package for tournament tracking logic, written completely in F#.
+2. [Tournament.Web](./tournamenttracker/) is a [Fable](https://fable.io) web application that provides a UI for the core logic, written completely in #F.
 
 ## Requirements
 
@@ -29,10 +28,4 @@ The repo consists of three projects:
 
 - Add secondary score for Swiss pairings in case score is tied
 
-### Fable JS bindings
-
-- Add Typescript type definitions
-
-### Web client
-
-- Implement
+### Webapp

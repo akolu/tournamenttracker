@@ -1,0 +1,58 @@
+.Settings__div--root {
+    flex: 1;
+
+    & h1 { 
+        margin-bottom: 0;
+    }
+
+    & label.label {
+        display: flex;
+        align-items: center;
+        margin-right: 10px;
+        margin-bottom: 0;
+        font-weight: normal;
+        font-size: .75rem;
+    }
+}
+
+.Settings__div--field {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    grid-gap: 10px;
+    margin-bottom: .5rem;
+
+    & > span {
+        display: flex;
+    }
+
+    & input {
+        min-width: 80px;
+    }
+}
+
+.Settings__NumberSelector--wrapper {
+    display: flex;
+
+    &>button {
+        border-radius: 50px;
+    }
+
+    &>div {
+        width: 40px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+    }
+}
+
+.Settings__Players--inputwrapper {
+    display: grid;
+    // grid-template-columns: 3fr 1fr;
+    grid-gap: 5px;
+    margin-bottom: .2rem;
+}
+
+.Settings__button--save {
+    margin: .9rem 0 0 0;
+    width: 75px;
+}

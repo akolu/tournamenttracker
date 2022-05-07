@@ -1,0 +1,16 @@
+.TournamentContainer__div--root {
+    display: flex;
+    flex: 1;
+    margin: 10px;
+    max-width: 1200px;
+    margin: 1rem;
+}
+
+.TournamentContainer__div--content {
+    display: flex;
+    flex: 1;
+    border-top: 1px solid #000;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: .9rem;
+}
