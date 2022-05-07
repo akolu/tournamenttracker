@@ -13,12 +13,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TournamentTracker.fs" />
-    <Compile Include="State.fs" />
-    <Compile Include="Context.fs" />
-    <Compile Include="Components/Settings/Settings.fs" />
-    <Compile Include="Components/Round/Round.fs" />
+    <Compile Include="Components/IconButton/IconButton.fs" />
     <Compile Include="Components/Results/Results.fs" />
     <Compile Include="Components/Tabs/Tabs.fs" />
+    <Compile Include="Settings/State.fs" />
+    <Compile Include="Settings/View.fs" />
+    <Compile Include="Round/State.fs" />
+    <Compile Include="Round/View.fs" />
+    <Compile Include="State.fs" />
+    <Compile Include="Context.fs" />
     <Compile Include="Components/TournamentContainer/TournamentContainer.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>

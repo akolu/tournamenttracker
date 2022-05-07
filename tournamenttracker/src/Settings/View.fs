@@ -1,65 +1,14 @@
-module Components.Settings
+module Settings.View
 
 open Feliz
 open Feliz.Bulma
 open Fable.FontAwesome
 open State
+open Components.IconButton
 
-Fable.Core.JsInterop.importSideEffects "./Settings.scss"
+Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 
-[<ReactComponent>]
-let private IconButton (icon: Fa.IconOption, fn: Browser.Types.MouseEvent -> unit) =
-    Bulma.button.button [
-        button.isRounded
-        button.isSmall
-        prop.onClick fn
-        prop.className "IconButton__button--root"
-        prop.children [
-            Bulma.icon (Fa.i [ icon ] [])
-        ]
-    ]
-
-type private IconButtonAction =
-    | IncRounds
-    | DecRounds
-    | IncPlayers
-    | DecPlayers
-
-[<ReactComponent>]
-let Settings (onCreate: TournamentSettings -> unit) =
-
-    let (rounds, setRounds) = React.useState (5)
-
-    let (players, setPlayers) =
-        React.useState [
-            ("Aku Ankka", 0)
-            ("Mikki Hiiri", 0)
-            ("Pelle Peloton", 0)
-            ("Hessu Hopo", 0)
-            ("Poliisimestari Sisu", 0)
-        ]
-
-    let iconClick action =
-        (fun _ ->
-            match action with
-            | DecRounds when rounds > 1 -> setRounds (rounds - 1)
-            | IncRounds when rounds < 9 -> setRounds (rounds + 1)
-            | IncPlayers -> setPlayers (players |> List.append [ ("", 0) ])
-            | DecPlayers when players.Length > 1 -> setPlayers (players.[.. players.Length - 2])
-            | DecPlayers when players.Length = 1 -> setPlayers ([ "", 0 ])
-            | _ -> ())
-
-    let playerNameChanged index name =
-        setPlayers (
-            players
-            |> List.mapi (fun i p -> if i = index then (name, snd p) else p)
-        )
-
-    let printPlayers (event: Browser.Types.KeyboardEvent) =
-        if event.key = "Enter" then
-            players
-            |> Seq.iter (fun p -> System.Console.WriteLine(fst p + ": " + (snd p).ToString()))
-
+let root (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
     Html.div [
         prop.className "Settings__div--root"
         prop.children [
@@ -86,9 +35,9 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            IconButton(Fa.Solid.Minus, iconClick DecRounds)
-                                            Html.div rounds
-                                            IconButton(Fa.Solid.Plus, iconClick IncRounds)
+                                            IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemoveRounds))
+                                            Html.div state.Rounds
+                                            IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddRounds))
                                         ]
                                     ]
                                 ]
@@ -100,9 +49,9 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            IconButton(Fa.Solid.Minus, iconClick DecPlayers)
-                                            Html.div players.Length
-                                            IconButton(Fa.Solid.Plus, iconClick IncPlayers)
+                                            IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemovePlayers))
+                                            Html.div state.Players.Length
+                                            IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddPlayers))
                                         ]
                                     ]
                                 ]
@@ -110,7 +59,7 @@ let Settings (onCreate: TournamentSettings -> unit) =
                             Bulma.button.button [
                                 button.isSmall
                                 button.isRounded
-                                prop.onClick (fun _ -> onCreate { Rounds = rounds; Players = players })
+                                prop.onClick (fun _ -> dispatch Confirm)
                                 prop.className "Settings__button--save"
                                 prop.children [
                                     Bulma.icon (Fa.i [ Fa.Solid.Save ] [])
@@ -123,7 +72,7 @@ let Settings (onCreate: TournamentSettings -> unit) =
                         prop.children [
                             Bulma.Divider.divider "Players"
                             Html.div (
-                                players
+                                state.Players
                                 |> List.mapi (fun i p ->
                                     Html.div [
                                         prop.className "Settings__Players--inputwrapper"
@@ -131,10 +80,9 @@ let Settings (onCreate: TournamentSettings -> unit) =
                                             Bulma.input.text [
                                                 input.isRounded
                                                 input.isSmall
-                                                prop.onKeyDown printPlayers
-                                                prop.onChange (fun (ev: string) -> playerNameChanged i ev)
+                                                prop.onChange (fun (ev: string) -> dispatch (EditPlayerName(i, ev)))
                                                 prop.placeholder "Player name"
-                                                prop.defaultValue (fst players.[i])
+                                                prop.defaultValue (fst p)
                                             ]
                                             // Bulma.input.text [
                                             //     input.isRounded
