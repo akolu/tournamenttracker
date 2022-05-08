@@ -384,17 +384,12 @@ type TestClass() =
               ("Alice", 19)
               ("Bob", 18)
               ("James", 11) ],
-            tournament.Standings
+            tournament.Standings()
         )
 
     [<Test>]
     [<Category("standings")>]
     member this.``total standings are equal to player list if no rounds have been played``() =
-        let round =
-            { Number = 1
-              Status = Pregame
-              Pairings = [] }
-
         let tournament =
             createTournament 1
             >>= addPlayers [ "Alice"
@@ -408,36 +403,8 @@ type TestClass() =
               ("Bob", 0)
               ("James", 0)
               ("Michael", 0) ],
-            tournament.Standings
+            tournament.Standings()
         )
-
-    [<Test>]
-    [<Category("standings")>]
-    member this.``standings does not include Ongoing rounds``() =
-        let tournament =
-            createTournament 2
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "James"
-                             "Michael" ]
-            >>= pair Swiss
-            >>= startRound
-            >>= score 1 (11, 9) // Alice 11, Bob 9
-            >>= score 2 (4, 16) // James 4, Michael 16
-            >>= finishRound
-            >>= pair Swiss
-            >>= startRound
-            >>= score 1 (20, 0) // Michael 20, Alice 0
-            |> unwrap
-
-        CollectionAssert.AreEqual(
-            [ ("Michael", 16)
-              ("Alice", 11)
-              ("Bob", 9)
-              ("James", 4) ],
-            tournament.Standings
-        )
-
 
     [<Test>]
     [<Category("swap")>]
@@ -544,7 +511,7 @@ type TestClass() =
               ("James", 9)
               ("Lily", 7)
               ("Bob", 5) ],
-            round1Finished.Standings
+            round1Finished.Standings()
         )
 
         // ROUND 2 PAIRINGS
@@ -577,7 +544,7 @@ type TestClass() =
               ("Bob", 16)
               ("Jack", 15)
               ("Michael", 13) ],
-            round2Finished.Standings
+            round2Finished.Standings()
         )
 
         // ROUND 3 PAIRINGS
@@ -610,7 +577,7 @@ type TestClass() =
               ("Jack", 25)
               ("Michael", 24)
               ("Lily", 23) ],
-            round3Finished.Standings
+            round3Finished.Standings()
         )
 
         // ROUND 4 PAIRINGS
@@ -643,5 +610,5 @@ type TestClass() =
               ("Bob", 35)
               ("Lily", 34)
               ("Michael", 29) ],
-            round4Finished.Standings
+            round4Finished.Standings()
         )

@@ -78,86 +78,7 @@ let private Pairing (pairing: Pairing) =
         ]
     ]
 
-[<ReactComponent>]
 let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
-    let actions =
-        match state.Round.Status, state.Form with
-        | (Pregame, _) ->
-            [ Bulma.button.button [
-                  button.isSmall
-                  button.isRounded
-                  prop.onClick (fun _ -> dispatch StartRound)
-                  prop.children [
-                      Bulma.icon (Fa.i [ Fa.Solid.Play ] [])
-                      Html.b "Start round"
-                  ]
-              ] ]
-        | (Ongoing, Some p) ->
-            [ Bulma.button.button [
-                  button.isSmall
-                  button.isRounded
-                  prop.onClick (fun _ -> dispatch (Edit None))
-                  prop.children [
-                      Bulma.icon (
-                          Html.i [
-                              prop.classes [ "fa"; "fa-xmark" ]
-                          ]
-                      )
-                      Html.b "Cancel"
-                  ]
-              ]
-              Bulma.button.button [
-                  button.isSmall
-                  button.isRounded
-                  prop.onClick (fun _ -> dispatch (ConfirmScore p))
-                  prop.children [
-                      Bulma.icon (Fa.i [ Fa.Solid.Check ] [])
-                      Html.b "Confirm"
-                  ]
-              ] ]
-        | (Ongoing, None) ->
-            [ Bulma.button.button [
-                  button.isSmall
-                  button.isRounded
-                  prop.disabled (
-                      not (
-                          state.Round.Pairings
-                          |> Seq.forall (fun p -> p.IsScored)
-                      )
-                  )
-                  prop.onClick (fun _ -> dispatch FinishRound)
-                  prop.className "Round__button--finish"
-                  prop.children [
-                      Bulma.icon (Fa.i [ Fa.Solid.FlagCheckered ] [])
-                      Html.b "Finish round"
-                  ]
-              ] ]
-        | (Finished, _) -> []
-
-    let pairings =
-        Html.div [
-            prop.classes [
-                "Round__pairings_grid-wrapper"
-                match state.Round.Status with
-                | Pregame -> "Round__div--pregame"
-                | Ongoing -> "Round__div--ongoing"
-                | _ -> ""
-            ]
-            prop.children (
-                [ Html.div [
-                      prop.children [
-                          Html.b "Table"
-                          Html.b "Player 1"
-                          Html.b "Score"
-                          Html.b "Player 2"
-                          Html.b "Score"
-                      ]
-                  ] ]
-                @ (state.Round.Pairings
-                   |> List.map (fun p -> React.contextProvider (context, (state, dispatch), Pairing(p))))
-            )
-        ]
-
     Html.div [
         prop.className "Round__root"
         prop.children [
@@ -168,7 +89,29 @@ let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
                         column.isTwoThirds
                         prop.children [
                             Bulma.Divider.divider "Pairings"
-                            pairings
+                            Html.div [
+                                prop.classes [
+                                    "Round__pairings_grid-wrapper"
+                                    match state.Round.Status with
+                                    | Pregame -> "Round__div--pregame"
+                                    | Ongoing -> "Round__div--ongoing"
+                                    | _ -> ""
+                                ]
+                                prop.children (
+                                    [ Html.div [
+                                          prop.children [
+                                              Html.b "Table"
+                                              Html.b "Player 1"
+                                              Html.b "Score"
+                                              Html.b "Player 2"
+                                              Html.b "Score"
+                                          ]
+                                      ] ]
+                                    @ (state.Round.Pairings
+                                       |> List.map (fun p ->
+                                           React.contextProvider (context, (state, dispatch), Pairing(p))))
+                                )
+                            ]
                         ]
                     ]
                     Bulma.column [
@@ -176,14 +119,63 @@ let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
                         prop.children [
                             Bulma.Divider.divider "Standings"
                             Standings([ state.Round ], state.StandingsAcc)
-                            // Html.div (
-                            //     state.Round.Standings
-                            //     |> List.map (fun s -> Html.div ((fst s) + " " + (snd s).ToString()))
-                            // )
-                            ]
+                        ]
                     ]
                 ]
             ]
-            Html.span actions
+            Html.span (
+                match state.Round.Status, state.Form with
+                | (Pregame, _) ->
+                    [ Bulma.button.button [
+                          button.isSmall
+                          button.isRounded
+                          prop.onClick (fun _ -> dispatch StartRound)
+                          prop.children [
+                              Bulma.icon (Fa.i [ Fa.Solid.Play ] [])
+                              Html.b "Start round"
+                          ]
+                      ] ]
+                | (Ongoing, Some p) ->
+                    [ Bulma.button.button [
+                          button.isSmall
+                          button.isRounded
+                          prop.onClick (fun _ -> dispatch (Edit None))
+                          prop.children [
+                              Bulma.icon (
+                                  Html.i [
+                                      prop.classes [ "fa"; "fa-xmark" ]
+                                  ]
+                              )
+                              Html.b "Cancel"
+                          ]
+                      ]
+                      Bulma.button.button [
+                          button.isSmall
+                          button.isRounded
+                          prop.onClick (fun _ -> dispatch (ConfirmScore p))
+                          prop.children [
+                              Bulma.icon (Fa.i [ Fa.Solid.Check ] [])
+                              Html.b "Confirm"
+                          ]
+                      ] ]
+                | (Ongoing, None) ->
+                    [ Bulma.button.button [
+                          button.isSmall
+                          button.isRounded
+                          prop.disabled (
+                              not (
+                                  state.Round.Pairings
+                                  |> Seq.forall (fun p -> p.IsScored)
+                              )
+                          )
+                          prop.onClick (fun _ -> dispatch FinishRound)
+                          prop.className "Round__button--finish"
+                          prop.children [
+                              Bulma.icon (Fa.i [ Fa.Solid.FlagCheckered ] [])
+                              Html.b "Finish round"
+                          ]
+                      ] ]
+                | (Finished, _) -> []
+            )
         ]
     ]

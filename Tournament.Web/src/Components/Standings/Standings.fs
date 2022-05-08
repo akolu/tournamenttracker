@@ -19,16 +19,26 @@ let Standings (rounds: Round list, total: (string * int) list) =
         prop.className "Standings__root"
         prop.children (
             [ Html.div (
-                  [ Html.b "Player" ]
+                  [ Html.b [
+                        prop.children [
+                            Html.aside [ Html.b "#" ]
+                            Html.b "Player"
+                        ]
+                    ] ]
                   @ (rounds
                      |> List.map (fun r -> Html.b (sprintf "Round %d" r.Number)))
                     @ [ Html.b "Total" ]
               ) ]
             @ (total
-               |> List.map (fun (player, total) ->
+               |> List.mapi (fun i (player, total) ->
                    Html.div [
                        prop.children (
-                           [ Html.span player ]
+                           [ Html.span [
+                                 prop.children [
+                                     Html.aside [ Html.span (i + 1) ]
+                                     Html.span player
+                                 ]
+                             ] ]
                            @ (rounds
                               |> List.map (fun r -> Html.span (getPlayerScore player r)))
                              @ [ Html.span total ]

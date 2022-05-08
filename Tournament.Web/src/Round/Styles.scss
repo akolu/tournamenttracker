@@ -6,6 +6,10 @@
     & button {
         margin-right: .5rem;
     }
+
+    & .Standings__root > div aside {
+        display: none;
+    }
 }
 
 .Round__pairings_grid-wrapper {

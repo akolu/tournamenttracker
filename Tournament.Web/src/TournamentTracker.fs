@@ -106,7 +106,7 @@ let swap player1 player2 tournament =
 let standings tournament =
     tournament
     |> ParseTournament
-    |> (fun t -> t.Standings)
+    |> (fun t -> t.Standings())
     |> List.map (fun (name, score) -> {| player = name; score = score |})
     |> Array.ofList
 

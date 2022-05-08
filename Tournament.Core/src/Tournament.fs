@@ -32,27 +32,18 @@ type Tournament =
         | Some rnd -> rnd.Pairings
         | None -> (List.rev this.Rounds).Head.Pairings
 
-    member this.Standings =
-        let mergeMaps map1 map2 =
-            Map.fold
-                (fun state key value ->
-                    match Map.tryFind key state with
-                    | Some v -> Map.add key (value + v) state
-                    | None -> Map.add key value state)
-                map1
-                map2
+    member this.Standings rnd =
+        match this.CurrentRound with
+        | Some rnd when rnd.Number = 1 -> (this.Players |> List.map (fun p -> p, 0))
+        | _ ->
+            this.Rounds
+            |> List.take rnd
+            |> List.collect ((fun r -> r.Standings))
+            |> List.groupBy (fun r -> fst r)
+            |> List.map (fun r -> fst r, snd r |> List.sumBy (fun s -> snd s))
+            |> List.sortBy (fun (_, score) -> -score)
 
-        let players =
-            this.Players
-            |> List.map (fun p -> (p, 0))
-            |> Map.ofList
-
-        this.Rounds
-        |> List.filter (fun r -> r.Status <> Ongoing)
-        |> List.map (fun r -> r.Standings)
-        |> List.fold (fun acc scores -> mergeMaps acc (Map.ofList scores)) players
-        |> Map.toList
-        |> List.sortBy (fun (_, score) -> -score)
+    member this.Standings() = this.Standings this.Rounds.Length
 
 let createTournament rounds =
     let defaultRound index =
@@ -82,7 +73,7 @@ let pair alg (tournament: Tournament) =
         | Swiss -> swiss tournament.MatchHistory
         | Shuffle -> shuffle
 
-    tournament.ModifyCurrentRound(createPairings pairingFunc tournament.Standings)
+    tournament.ModifyCurrentRound(createPairings pairingFunc (tournament.Standings()))
 
 let score number result (tournament: Tournament) =
     tournament.ModifyCurrentRound(score number result)

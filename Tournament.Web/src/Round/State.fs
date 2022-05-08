@@ -21,13 +21,7 @@ type RoundMsg =
 let init num t =
     { Round = t.Rounds |> List.find (fun r -> r.Number = num)
       Form = None
-      StandingsAcc =
-        t.Rounds
-        |> List.take num
-        |> List.collect ((fun r -> r.Standings))
-        |> List.groupBy (fun r -> fst r)
-        |> List.map (fun r -> fst r, snd r |> List.sumBy (fun s -> snd s))
-        |> List.sortBy (fun (_, score) -> -score) },
+      StandingsAcc = t.Standings num },
     Cmd.none
 
 let update msg model =

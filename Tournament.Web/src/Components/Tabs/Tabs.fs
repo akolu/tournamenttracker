@@ -29,7 +29,7 @@ let Tabs
             @ (props.rounds
                |> List.map (fun r -> (Html.span r.Number)))
               @ [ Bulma.icon [
-                      Fa.i [ Fa.Solid.Crown ] []
+                      Fa.i [ Fa.Solid.Trophy ] []
                   ] ]
 
 

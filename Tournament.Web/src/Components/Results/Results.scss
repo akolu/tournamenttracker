@@ -1,0 +1,12 @@
+.Results__root {
+    width: 100%;
+
+    & > .Results__table {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+    }
+
+    & .Standings__root > div > :last-child {
+        background-color: rgba($color: palegreen, $alpha: 0.1);
+    }
+}

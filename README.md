@@ -26,6 +26,18 @@ The repo consists of three projects:
 
 ### Core lib
 
-- Add secondary score for Swiss pairings in case score is tied
+- feat: support player rating as a tiebreaker in Swiss pairings
+- feat: support secondary round score as a tiebreaker in Swiss pairings
+- refactor: return Result from PairingAlgorithm function for better error handling
 
 ### Webapp
+
+- feat: use localstorage to persist tournament (& add possility to reset)
+- feat: swap players
+- feat: add "extra" points (from Settings screen) manually, include in results
+- feat: add snackbars & better error handling
+- feat: prevent creating a tournament with more rounds than legal swiss pairings
+- feat: add timer for rounds
+- refactor: extract SASS variables to own file
+- refactor: extract Round button to component to reduce code duplication
+- chore: verify CSS class names follow BEM naming conventions
