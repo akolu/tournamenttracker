@@ -61,7 +61,7 @@ let Settings (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
                                 button.isSmall
                                 button.isRounded
                                 prop.onClick (fun _ -> dispatch Confirm)
-                                prop.disabled (state.ValidationErrors.Length > 0)
+                                prop.disabled (state.ValidationErrors.Count > 0)
                                 prop.className "Settings__button--save"
                                 prop.children [
                                     Bulma.icon (Fa.i [ Fa.Solid.Save ] [])

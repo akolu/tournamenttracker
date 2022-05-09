@@ -45,9 +45,7 @@ let state () =
 
     { Tournament = { Rounds = []; Players = [] }
       CurrentPage = { Index = 0; Model = Settings settings } },
-    Cmd.batch [
-        Cmd.map SettingsMsg settingsCmd
-    ]
+    Cmd.map SettingsMsg settingsCmd
 
 let private getActivePage i t =
     match i with
