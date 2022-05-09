@@ -5,15 +5,25 @@
 
     & aside {
         display: inline-block;
-        width: 40px;
+        width: 30px;
+        padding-left: 10px;
     }
 
     & > div {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
     
-        & > span:not(:first-of-type), & > b:not(:first-of-type) {
+        & > span:not(:first-child), & > b:not(:first-child) {
             text-align: center;
+        }
+
+        & > :last-child {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+
+            & > aside {
+                width: 100%;
+            }
         }
     }
 

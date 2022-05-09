@@ -33,12 +33,12 @@ let Tabs
                   ] ]
 
     let isDisabled tab =
-        // if tab > props.rounds.Length then
-        //     false
-        // else
-        match List.tryFind (fun r -> r.Status <> Finished) props.rounds with
-        | Some r when tab > r.Number -> true
-        | _ -> false
+        if tab > props.rounds.Length then
+            false
+        else
+            match List.tryFind (fun r -> r.Status <> Finished) props.rounds with
+            | Some r when tab > r.Number -> true
+            | _ -> false
 
     Html.div [
         prop.className "Tabs__div--wrapper"

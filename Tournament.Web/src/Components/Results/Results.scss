@@ -1,12 +1,51 @@
 .Results__root {
     width: 100%;
 
+    $table_border: 1px solid gainsboro;
+
     & > .Results__table {
         display: grid;
         grid-template-columns: 40px 1fr;
     }
 
-    & .Standings__root > div > :last-child {
-        background-color: rgba($color: palegreen, $alpha: 0.1);
+    & .Standings__root {
+
+        & > div {
+            grid-template-columns: minmax(0, 20%) repeat(auto-fit, minmax(60px, 1fr) minmax(10%, 1fr));
+        }
+
+        & > div:first-child {
+            border-bottom: $table_border;
+        }
+
+        & > div:not(:first-child) {
+            border-right: $table_border;
+            border-left: $table_border;
+
+            & > span:last-child {
+                & > aside {
+                    border-right: $table_border;
+
+                    & > input {
+                        flex: 1;
+                        max-width: 40px;
+                        text-align: center;
+                    }
+                }
+
+                & > :not(aside) {
+                    background-color: rgba($color: palegreen, $alpha: 0.1);
+                }
+            }
+        }
+
+        & > div:last-child {
+            border-bottom: $table_border;
+        }
+
+        & > div > span:last-child > aside {
+            margin: 0;
+            padding: 0;
+        }
     }
 }

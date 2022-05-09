@@ -1,6 +1,7 @@
 module Components.Standings
 
 open Feliz
+open Feliz.Bulma
 open Tournament.Round
 
 Fable.Core.JsInterop.importSideEffects "./Standings.scss"
@@ -19,7 +20,7 @@ let Standings (rounds: Round list, total: (string * int) list) =
         prop.className "Standings__root"
         prop.children (
             [ Html.div (
-                  [ Html.b [
+                  [ Html.span [
                         prop.children [
                             Html.aside [ Html.b "#" ]
                             Html.b "Player"
@@ -27,10 +28,15 @@ let Standings (rounds: Round list, total: (string * int) list) =
                     ] ]
                   @ (rounds
                      |> List.map (fun r -> Html.b (sprintf "Round %d" r.Number)))
-                    @ [ Html.b "Total" ]
+                    @ [ Html.span [
+                            prop.children [
+                                Html.aside [ Html.b "Extra" ]
+                                Html.b "Total"
+                            ]
+                        ] ]
               ) ]
             @ (total
-               |> List.mapi (fun i (player, total) ->
+               |> List.mapi (fun i (player, score) ->
                    Html.div [
                        prop.children (
                            [ Html.span [
@@ -41,7 +47,25 @@ let Standings (rounds: Round list, total: (string * int) list) =
                              ] ]
                            @ (rounds
                               |> List.map (fun r -> Html.span (getPlayerScore player r)))
-                             @ [ Html.span total ]
+                             @ [ Html.span [
+                                     prop.children [
+                                         Html.aside [
+                                             Html.input (
+                                                 [ prop.type' "number"
+                                                   //    prop.onKeyDown (fun e ->
+                                                   //        match e.key, state.Form with
+                                                   //        | "Enter", Some p -> dispatch (ConfirmScore p)
+                                                   //        | "Escape", _ -> dispatch (Edit None)
+                                                   //        | _ -> ())
+                                                   prop.inputMode.numeric
+                                                   prop.pattern (System.Text.RegularExpressions.Regex "[0-9]*")
+                                                   input.isSmall
+                                                   prop.defaultValue 0 ]
+                                             )
+                                         ]
+                                         Html.span score
+                                     ]
+                                 ] ]
                        )
                    ]))
         )
