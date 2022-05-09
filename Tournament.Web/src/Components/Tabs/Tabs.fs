@@ -32,14 +32,11 @@ let Tabs
                       Fa.i [ Fa.Solid.Trophy ] []
                   ] ]
 
-
-
     let isDisabled tab =
-        let firstOngoing =
-            props.rounds
-            |> List.tryFind (fun r -> r.Status <> Finished)
-
-        match firstOngoing with
+        // if tab > props.rounds.Length then
+        //     false
+        // else
+        match List.tryFind (fun r -> r.Status <> Finished) props.rounds with
         | Some r when tab > r.Number -> true
         | _ -> false
 

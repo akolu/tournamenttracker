@@ -35,7 +35,7 @@ The repo consists of three projects:
 - feat: use localstorage to persist tournament (& add possility to reset)
 - feat: swap players
 - feat: add "extra" points (from Settings screen) manually, include in results
-- feat: add snackbars & better error handling
+- feat: add tooltips / snackbars & better error handling
 - feat: prevent creating a tournament with more rounds than legal swiss pairings
 - feat: add timer for rounds
 - refactor: extract SASS variables to own file
