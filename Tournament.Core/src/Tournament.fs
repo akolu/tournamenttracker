@@ -58,11 +58,13 @@ let createTournament rounds =
               Players = [] }
     | _ -> Error "Tournament should have at least one round"
 
-// TODO: prevent adding multiple persons with same name
-let addPlayers (players: string list) (tournament: Tournament) =
-    match Seq.tryFind (fun player -> List.exists ((=) player) tournament.Players) players with
-    | Some duplicate -> Error(sprintf "Player %s already exists" duplicate)
-    | None -> Ok { tournament with Players = List.sort (tournament.Players @ players) }
+let rec addPlayers (players: string list) (tournament: Tournament) =
+    if players.IsEmpty then
+        Ok tournament
+    else
+        match Seq.tryFind (fun player -> List.exists ((=) player) tournament.Players) players with
+        | Some duplicate -> Error(sprintf "Player %s already exists" duplicate)
+        | None -> { tournament with Players = List.sort (tournament.Players @ [players.Head]) } |> addPlayers players.Tail
 
 let startRound (tournament: Tournament) = tournament.ModifyCurrentRound start
 

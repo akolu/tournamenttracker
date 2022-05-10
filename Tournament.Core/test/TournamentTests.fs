@@ -95,6 +95,18 @@ type TestClass() =
         | Ok _ -> failwith "Should not be possible to add duplicate players"
         | Error err -> Assert.AreEqual("Player Alice already exists", err)
 
+
+    [<Test>]
+    [<Category("addPlayers")>]
+    member this.``multiple players with duplicate names cannot be added``() =
+        let tournament =
+            createTournament 1
+            >>= addPlayers [ "Alice"; "Alice" ]
+
+        match tournament with
+        | Ok _ -> failwith "Should not be possible to add duplicate players"
+        | Error err -> Assert.AreEqual("Player Alice already exists", err)
+
     [<Test>]
     [<Category("addPlayers")>]
     member this.``multiple players can be added at once``() =
