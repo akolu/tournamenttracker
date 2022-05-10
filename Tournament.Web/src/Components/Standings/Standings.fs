@@ -3,11 +3,12 @@ module Components.Standings
 open Feliz
 open Feliz.Bulma
 open Tournament.Round
+open Tournament.Player
 
 Fable.Core.JsInterop.importSideEffects "./Standings.scss"
 
 [<ReactComponent>]
-let Standings (rounds: Round list, total: (string * int) list) =
+let Standings (rounds: Round list, total: (Player * int) list) =
 
     let getPlayerScore player (round: Round) =
         match round.Standings
@@ -42,7 +43,7 @@ let Standings (rounds: Round list, total: (string * int) list) =
                            [ Html.span [
                                  prop.children [
                                      Html.aside [ Html.span (i + 1) ]
-                                     Html.span player
+                                     Html.span player.Name
                                  ]
                              ] ]
                            @ (rounds

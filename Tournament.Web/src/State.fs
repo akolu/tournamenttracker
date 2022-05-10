@@ -3,6 +3,7 @@ module State
 open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
+open Tournament.Player
 open Elmish
 open System
 
@@ -38,10 +39,10 @@ let state () =
     let settings, settingsCmd =
         Settings.State.init
             3
-            [ "Aku Ankka"
-              "Mikki Hiiri"
-              "Hessu Hopo"
-              "Pelle Peloton" ]
+            [ "Aku Ankka", 0
+              "Mikki Hiiri", 0
+              "Hessu Hopo", 0
+              "Pelle Peloton", 0 ]
 
     { Tournament = { Rounds = []; Players = [] }
       CurrentPage = { Index = 0; Model = Settings settings } },
@@ -51,15 +52,14 @@ let private getActivePage i t =
     match i with
     | 0 ->
         { Index = 0
-          Model = Settings(fst (Settings.State.init t.Rounds.Length t.Players)) }
+          Model = Settings(fst (Settings.State.init t.Rounds.Length (List.map (fun p -> p.Name, p.Rating) t.Players))) }
     | num when num > t.Rounds.Length -> { Index = num; Model = Results }
     | num ->
         { Index = num
           Model = Round(fst (Round.State.init num t)) }
 
 let createTournament (settings: Settings.State.SettingsModel) state =
-    createTournament settings.Rounds
-    >>= addPlayers (settings.Players |> List.map (fun p -> fst p))
+    Tournament.Create(settings.Rounds, (settings.Players |> List.map (fun p -> fst p)))
     >>= pair Shuffle
     |> unwrap
     |> (fun t ->

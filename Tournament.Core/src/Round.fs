@@ -1,7 +1,8 @@
 module Tournament.Round
 
 open Utils
-open Tournament.Pairing
+open Pairing
+open Player
 
 type RoundStatus =
     | Pregame
@@ -30,10 +31,10 @@ let private pairsToPairings pairs =
           Player2Score = 0 })
 
 // TODO: change fn to return Result
-let internal createPairings fn (standings: List<string * int>) round =
+let internal createPairings fn (standings: List<Player * int>) round =
     let playerList =
         match standings with
-        | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", 0) ]
+        | list when (<>) ((%) list.Length 2) 0 -> standings @ [ (Player.From "BYE", 0) ]
         | _ -> standings
 
     if round.Status = Pregame then
@@ -43,13 +44,13 @@ let internal createPairings fn (standings: List<string * int>) round =
 
 let private validatePlayerSwap player round =
     let exists player pairing =
-        ((=) player pairing.Player1)
-        || ((=) player pairing.Player2)
+        ((=) player pairing.Player1.Name)
+        || ((=) player pairing.Player2.Name)
 
     match List.tryFind (exists player) round.Pairings with
-    | Some pairing when not pairing.IsScored -> Ok true
-    | Some _ -> Error "Can't swap players if either player's round has already been scored!"
-    | None -> Error(sprintf "Player %s not found" player)
+    | Some p when p.Player1.Name = player -> Ok p.Player1
+    | Some p when p.Player2.Name = player -> Ok p.Player2
+    | _ -> Error(sprintf "Player %s not found" player)
 
 let internal swapPlayers player1 player2 round =
     let trySwap p1 p2 pairing =
@@ -64,7 +65,8 @@ let internal swapPlayers player1 player2 round =
             Player2 = (tryReplace pairing.Player2) }
 
     match (validatePlayerSwap player1 round, validatePlayerSwap player2 round) with
-    | (Ok _, Ok _) -> Ok { round with Pairings = List.map (trySwap player1 player2) round.Pairings }
+    | _ when round.Status <> Pregame -> Error "Can't swap players: round already started!"
+    | (Ok p1, Ok p2) -> Ok { round with Pairings = List.map (trySwap p1 p2) round.Pairings }
     | (Error err, _) -> Error err
     | (_, Error err) -> Error err
 
@@ -84,7 +86,6 @@ let internal finish round =
 
 let internal score number result round =
     match (List.tryFind (fun (p: Pairing) -> number = p.Number) round.Pairings) with
-    | Some pairing when round.Status = Ongoing ->
-        Ok { round with Pairings = (replace ((=) pairing) (pairing.Score result)) round.Pairings }
-    | Some pairing -> Error(sprintf "Unable to score: round %i not started" round.Number)
+    | _ when round.Status <> Ongoing -> Error(sprintf "Unable to score: round %i not started" round.Number)
+    | Some pairing -> Ok { round with Pairings = (replace ((=) pairing) (pairing.Score result)) round.Pairings }
     | None -> Error(sprintf "Match %i not found!" number)

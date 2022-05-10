@@ -24,7 +24,7 @@ type SettingsMsg =
 
 let init rounds players =
     { Rounds = rounds
-      Players = players |> List.map (fun p -> (p, 0))
+      Players = players
       ValidationErrors = Map.empty },
     Cmd.none
 

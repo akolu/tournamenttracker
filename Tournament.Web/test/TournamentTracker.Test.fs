@@ -3,6 +3,11 @@ module TournamentTracker.Test
 open Fable.Jester
 open TournamentTracker
 
+let player (name: string) =
+    {| name = name
+       rating = 0
+       bonusScore = 0 |}
+
 Jest.describe (
     "TournamentTracker tests",
     fun () ->
@@ -27,24 +32,30 @@ Jest.describe (
             (fun () ->
                 let tournament =
                     createTournament 1
-                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> addPlayers [|
+                        player "Ossi"
+                        player "Aku"
+                       |]
 
                 Jest
                     .expect(tournament)
                     .toEqual (
-                        {| players = [| "Aku"; "Ossi" |]
+                        {| players = [| player "Aku"; player "Ossi" |]
                            rounds =
                             [| {| number = 1
                                   pairings = [||]
                                   status = "Pregame" |} |] |}
                     )
 
-                let withMorePlayers = tournament |> addPlayers [| "Veikka" |]
+                let withMorePlayers = tournament |> addPlayers [| player "Veikka" |]
 
                 Jest
                     .expect(withMorePlayers)
                     .toEqual (
-                        {| players = [| "Aku"; "Ossi"; "Veikka" |]
+                        {| players =
+                            [| player "Aku"
+                               player "Ossi"
+                               player "Veikka" |]
                            rounds =
                             [| {| number = 1
                                   pairings = [||]
@@ -57,19 +68,22 @@ Jest.describe (
             (fun () ->
                 let tournament =
                     createTournament 1
-                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> addPlayers [|
+                        player "Ossi"
+                        player "Aku"
+                       |]
                     |> pair "Swiss"
 
                 Jest
                     .expect(tournament)
                     .toEqual (
-                        {| players = [| "Aku"; "Ossi" |]
+                        {| players = [| player "Aku"; player "Ossi" |]
                            rounds =
                             [| {| number = 1
                                   pairings =
                                    [| {| number = 1
-                                         player1 = "Aku"
-                                         player2 = "Ossi"
+                                         player1 = player "Aku"
+                                         player2 = player "Ossi"
                                          player1Score = 0
                                          player2Score = 0 |} |]
                                   status = "Pregame" |} |] |}
@@ -81,20 +95,23 @@ Jest.describe (
             (fun () ->
                 let tournament =
                     createTournament 1
-                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> addPlayers [|
+                        player "Ossi"
+                        player "Aku"
+                       |]
                     |> pair "Swiss"
                     |> startRound
 
                 Jest
                     .expect(tournament)
                     .toEqual (
-                        {| players = [| "Aku"; "Ossi" |]
+                        {| players = [| player "Aku"; player "Ossi" |]
                            rounds =
                             [| {| number = 1
                                   pairings =
                                    [| {| number = 1
-                                         player1 = "Aku"
-                                         player2 = "Ossi"
+                                         player1 = player "Aku"
+                                         player2 = player "Ossi"
                                          player1Score = 0
                                          player2Score = 0 |} |]
                                   status = "Ongoing" |} |] |}
@@ -106,7 +123,10 @@ Jest.describe (
             (fun () ->
                 let tournament =
                     createTournament 1
-                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> addPlayers [|
+                        player "Ossi"
+                        player "Aku"
+                       |]
                     |> pair "Swiss"
                     |> startRound
                     |> score 1 (10, 10)
@@ -114,13 +134,13 @@ Jest.describe (
                 Jest
                     .expect(tournament)
                     .toEqual (
-                        {| players = [| "Aku"; "Ossi" |]
+                        {| players = [| player "Aku"; player "Ossi" |]
                            rounds =
                             [| {| number = 1
                                   pairings =
                                    [| {| number = 1
-                                         player1 = "Aku"
-                                         player2 = "Ossi"
+                                         player1 = player "Aku"
+                                         player2 = player "Ossi"
                                          player1Score = 10
                                          player2Score = 10 |} |]
                                   status = "Ongoing" |} |] |}
@@ -132,7 +152,10 @@ Jest.describe (
             (fun () ->
                 let tournament =
                     createTournament 1
-                    |> addPlayers [| "Ossi"; "Aku" |]
+                    |> addPlayers [|
+                        player "Ossi"
+                        player "Aku"
+                       |]
                     |> pair "Swiss"
                     |> startRound
                     |> score 1 (20, 0)
@@ -142,13 +165,13 @@ Jest.describe (
                 Jest
                     .expect(tournament)
                     .toEqual (
-                        {| players = [| "Aku"; "Ossi" |]
+                        {| players = [| player "Aku"; player "Ossi" |]
                            rounds =
                             [| {| number = 1
                                   pairings =
                                    [| {| number = 1
-                                         player1 = "Aku"
-                                         player2 = "Ossi"
+                                         player1 = player "Aku"
+                                         player2 = player "Ossi"
                                          player1Score = 20
                                          player2Score = 0 |} |]
                                   status = "Finished" |} |] |}
@@ -161,10 +184,10 @@ Jest.describe (
                 let tournament =
                     createTournament 1
                     |> addPlayers [|
-                        "Aku"
-                        "Juha"
-                        "Ossi"
-                        "Veikka"
+                        player "Aku"
+                        player "Juha"
+                        player "Ossi"
+                        player "Veikka"
                        |]
                     |> pair "Swiss"
                     |> swap "Aku" "Ossi"
@@ -172,18 +195,22 @@ Jest.describe (
                 Jest
                     .expect(tournament)
                     .toEqual (
-                        {| players = [| "Aku"; "Juha"; "Ossi"; "Veikka" |]
+                        {| players =
+                            [| player "Aku"
+                               player "Juha"
+                               player "Ossi"
+                               player "Veikka" |]
                            rounds =
                             [| {| number = 1
                                   pairings =
                                    [| {| number = 1
-                                         player1 = "Ossi"
-                                         player2 = "Juha"
+                                         player1 = player "Ossi"
+                                         player2 = player "Juha"
                                          player1Score = 0
                                          player2Score = 0 |}
                                       {| number = 2
-                                         player1 = "Aku"
-                                         player2 = "Veikka"
+                                         player1 = player "Aku"
+                                         player2 = player "Veikka"
                                          player1Score = 0
                                          player2Score = 0 |} |]
                                   status = "Pregame" |} |] |}
@@ -196,10 +223,10 @@ Jest.describe (
                 let standings =
                     createTournament 1
                     |> addPlayers [|
-                        "Aku"
-                        "Juha"
-                        "Ossi"
-                        "Veikka"
+                        player "Aku"
+                        player "Juha"
+                        player "Ossi"
+                        player "Veikka"
                        |]
                     |> pair "Swiss"
                     |> startRound
@@ -211,10 +238,11 @@ Jest.describe (
                 Jest
                     .expect(standings)
                     .toEqual (
-                        [| {| player = "Veikka"; score = 15 |}
-                           {| player = "Aku"; score = 11 |}
-                           {| player = "Juha"; score = 9 |}
-                           {| player = "Ossi"; score = 5 |} |]
+                        [| {| player = player "Veikka"
+                              score = 15 |}
+                           {| player = player "Aku"; score = 11 |}
+                           {| player = player "Juha"; score = 9 |}
+                           {| player = player "Ossi"; score = 5 |} |]
                     ))
         )
 
@@ -224,10 +252,10 @@ Jest.describe (
                 let pairings =
                     createTournament 1
                     |> addPlayers [|
-                        "Aku"
-                        "Juha"
-                        "Ossi"
-                        "Veikka"
+                        player "Aku"
+                        player "Juha"
+                        player "Ossi"
+                        player "Veikka"
                        |]
                     |> pair "Swiss"
                     |> pairings
@@ -236,13 +264,13 @@ Jest.describe (
                     .expect(pairings)
                     .toEqual (
                         [| {| number = 1
-                              player1 = "Aku"
-                              player2 = "Juha"
+                              player1 = player "Aku"
+                              player2 = player "Juha"
                               player1Score = 0
                               player2Score = 0 |}
                            {| number = 2
-                              player1 = "Ossi"
-                              player2 = "Veikka"
+                              player1 = player "Ossi"
+                              player2 = player "Veikka"
                               player1Score = 0
                               player2Score = 0 |} |]
                     ))

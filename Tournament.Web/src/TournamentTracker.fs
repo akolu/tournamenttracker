@@ -1,15 +1,20 @@
 module TournamentTracker
 
 open Tournament.Tournament
+open Tournament.Player
 open Tournament.PairingGenerator
 open Tournament.Utils
-open Fable.Core.JsInterop
 
 // DTOs are anonymous records so that they get compiled into plain javascript objects instead of class instances
+type PlayerDTO =
+    {| name: string
+       rating: int
+       bonusScore: int |}
+
 type PairingDTO =
     {| number: int
-       player1: string
-       player2: string
+       player1: PlayerDTO
+       player2: PlayerDTO
        player1Score: int
        player2Score: int |}
 
@@ -19,13 +24,25 @@ type RoundDTO =
        status: string |}
 
 type TournamentDTO =
-    {| players: string []
+    {| players: PlayerDTO []
        rounds: RoundDTO [] |}
+
+let private ParsePlayer (p: obj) : Tournament.Player.Player =
+    p :?> PlayerDTO
+    |> (fun p ->
+        { Name = p.name
+          Rating = p.rating
+          BonusScore = p.bonusScore })
+
+let private SerializePlayer (p: Tournament.Player.Player) =
+    {| name = p.Name
+       rating = p.Rating
+       bonusScore = p.BonusScore |}
 
 let private SerializePairing (p: Tournament.Pairing.Pairing) =
     {| number = p.Number
-       player1 = p.Player1
-       player2 = p.Player2
+       player1 = SerializePlayer p.Player1
+       player2 = SerializePlayer p.Player2
        player1Score = p.Player1Score
        player2Score = p.Player2Score |}
 
@@ -33,8 +50,8 @@ let private ParsePairing (p: obj) : Tournament.Pairing.Pairing =
     p :?> PairingDTO
     |> (fun p ->
         { Number = p.number
-          Player1 = p.player1
-          Player2 = p.player2
+          Player1 = ParsePlayer p.player1
+          Player2 = ParsePlayer p.player2
           Player1Score = p.player1Score
           Player2Score = p.player2Score })
 
@@ -58,13 +75,13 @@ let private ParseRound (r: obj) : Tournament.Round.Round =
           Status = ParseStatus r.status })
 
 let private SerializeTournament (t: Tournament) =
-    {| players = List.toArray t.Players
+    {| players = List.toArray (List.map SerializePlayer t.Players)
        rounds = List.toArray (List.map SerializeRound t.Rounds) |}
 
 let private ParseTournament (t: obj) =
     t :?> TournamentDTO
     |> (fun t ->
-        { Players = Array.toList t.players
+        { Players = List.map ParsePlayer (Array.toList t.players)
           Rounds = List.map ParseRound (Array.toList t.rounds) })
 
 let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) (tournament: obj) =
@@ -75,12 +92,12 @@ let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) (tourna
     |> SerializeTournament
 
 let createTournament rounds =
-    createTournament rounds
+    Tournament.Create rounds
     |> unwrap
     |> SerializeTournament
 
 let addPlayers players tournament =
-    wrapSerialize (addPlayers (players |> Array.toList)) tournament
+    wrapSerialize (addPlayers (List.map ParsePlayer (Array.toList players))) tournament
 
 let private parseAlg alg =
     match alg with
@@ -107,7 +124,9 @@ let standings tournament =
     tournament
     |> ParseTournament
     |> (fun t -> t.Standings())
-    |> List.map (fun (name, score) -> {| player = name; score = score |})
+    |> List.map (fun (name, score) ->
+        {| player = SerializePlayer name
+           score = score |})
     |> Array.ofList
 
 let pairings tournament =

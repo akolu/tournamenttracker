@@ -2,12 +2,13 @@ module Tournament.Tournament
 
 open Round
 open Utils
-open Tournament.PairingGenerator
-open Tournament.Pairing
+open PairingGenerator
+open Pairing
+open Player
 
 type Tournament =
     { Rounds: Round list
-      Players: string list }
+      Players: Player list }
     member this.CurrentRound = List.tryFind (fun rnd -> rnd.Status <> Finished) this.Rounds
 
     member internal this.ModifyCurrentRound(fn: Round -> Result<Round, string>) =
@@ -34,7 +35,9 @@ type Tournament =
 
     member this.Standings rnd =
         match this.CurrentRound with
-        | Some rnd when rnd.Number = 1 -> (this.Players |> List.map (fun p -> p, 0))
+        | Some rnd when rnd.Number = 1 ->
+            this.Players
+            |> List.map (fun p -> p, p.BonusScore)
         | _ ->
             this.Rounds
             |> List.take rnd
@@ -45,26 +48,31 @@ type Tournament =
 
     member this.Standings() = this.Standings this.Rounds.Length
 
-let createTournament rounds =
-    let defaultRound index =
-        { Number = (+) index 1
-          Pairings = []
-          Status = Pregame }
+    static member Create(rounds, players) =
+        let defaultRound index =
+            { Number = (+) index 1
+              Pairings = []
+              Status = Pregame }
 
-    match rounds with
-    | n when n > 0 ->
-        Ok
-            { Rounds = (List.init rounds defaultRound)
-              Players = [] }
-    | _ -> Error "Tournament should have at least one round"
+        match rounds with
+        | n when n > 0 ->
+            Ok
+                { Rounds = (List.init rounds defaultRound)
+                  Players = players |> List.map (fun p -> Player.From p) }
+        | _ -> Error "Tournament should have at least one round"
 
-let rec addPlayers (players: string list) (tournament: Tournament) =
+    static member Create rounds = Tournament.Create(rounds, [])
+
+
+let rec addPlayers (players: Player list) (tournament: Tournament) =
     if players.IsEmpty then
         Ok tournament
     else
-        match Seq.tryFind (fun player -> List.exists ((=) player) tournament.Players) players with
-        | Some duplicate -> Error(sprintf "Player %s already exists" duplicate)
-        | None -> { tournament with Players = List.sort (tournament.Players @ [players.Head]) } |> addPlayers players.Tail
+        match Seq.tryFind (fun player -> List.exists (fun p -> p.Name = player.Name) tournament.Players) players with
+        | Some duplicate -> Error(sprintf "Player %s already exists" duplicate.Name)
+        | None ->
+            { tournament with Players = List.sort (tournament.Players @ [ players.Head ]) }
+            |> addPlayers (players.Tail)
 
 let startRound (tournament: Tournament) = tournament.ModifyCurrentRound start
 

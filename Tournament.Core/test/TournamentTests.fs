@@ -1,28 +1,22 @@
 module TournamentTests
 
-open System
 open Tournament.Tournament
 open Tournament.PairingGenerator
 open Tournament.Round
 open Tournament.Pairing
 open Tournament.Utils
+open Tournament.Player
 open NUnit.Framework
 
 [<TestFixture>]
 type TestClass() =
 
     let table number (p1, p2) =
-        let pairing =
-            { Number = 0
-              Player1 = ""
-              Player2 = ""
-              Player1Score = 0
-              Player2Score = 0 }
-
-        { pairing with
-            Number = number
-            Player1 = p1
-            Player2 = p2 }
+        { Number = number
+          Player1 = Player.From p1
+          Player2 = Player.From p2
+          Player1Score = 0
+          Player2Score = 0 }
 
     let result (p1Score, p2Score) pairing =
         { pairing with
@@ -33,23 +27,25 @@ type TestClass() =
         tournament.Pairings
         |> List.map (fun pairing -> (pairing.Player1, pairing.Player2))
 
+    let names players = players |> List.map (fun p -> p.Name)
+
     [<Test>]
-    [<Category("createTournament")>]
+    [<Category("Tournament.Create")>]
     member this.``creating a tournament with zero or negative rounds returns Error``() =
-        match createTournament 0 with
-        | Ok _ -> failwith "createTournament should not succeed with 0 rounds"
+        match Tournament.Create 0 with
+        | Ok _ -> failwith "Tournament.Create should not succeed with 0 rounds"
         | Error msg -> Assert.AreEqual("Tournament should have at least one round", msg)
 
     [<Test>]
-    [<Category("createTournament")>]
+    [<Category("Tournament.Create")>]
     member this.``tournament can be created with a specified number of rounds``() =
-        let tournament = createTournament 5 |> unwrap
+        let tournament = Tournament.Create 5 |> unwrap
         Assert.AreEqual(5, tournament.Rounds.Length)
 
     [<Test>]
-    [<Category("createTournament")>]
+    [<Category("Tournament.Create")>]
     member this.``initial rounds are numbered, unfinished and have no pairings``() =
-        let tournament = createTournament 2 |> unwrap
+        let tournament = Tournament.Create 2 |> unwrap
 
         let expected =
             [ { Number = 1
@@ -65,31 +61,31 @@ type TestClass() =
     [<Category("addPlayers")>]
     member this.``players can be added one at a time``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice" ]
+            Tournament.Create 1
+            >>= addPlayers [ Player.From "Alice" ]
             |> unwrap
 
-        CollectionAssert.AreEqual([ "Alice" ], tournament.Players)
+        CollectionAssert.AreEqual([ "Alice" ], names tournament.Players)
 
     [<Test>]
     [<Category("addPlayers")>]
     member this.``players are added in alphabetical order``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Michael" ]
-            >>= addPlayers [ "Alice" ]
-            >>= addPlayers [ "Bob" ]
+            Tournament.Create 1
+            >>= addPlayers [ Player.From "Michael" ]
+            >>= addPlayers [ Player.From "Alice" ]
+            >>= addPlayers [ Player.From "Bob" ]
             |> unwrap
 
-        CollectionAssert.AreEqual([ "Alice"; "Bob"; "Michael" ], tournament.Players)
+        CollectionAssert.AreEqual([ "Alice"; "Bob"; "Michael" ], names tournament.Players)
 
     [<Test>]
     [<Category("addPlayers")>]
     member this.``duplicate players may not be added``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice" ]
-            >>= addPlayers [ "Alice" ]
+            Tournament.Create 1
+            >>= addPlayers [ Player.From "Alice" ]
+            >>= addPlayers [ Player.From "Alice" ]
 
         match tournament with
         | Ok _ -> failwith "Should not be possible to add duplicate players"
@@ -100,8 +96,9 @@ type TestClass() =
     [<Category("addPlayers")>]
     member this.``multiple players with duplicate names cannot be added``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"; "Alice" ]
+            Tournament.Create 1
+            >>= addPlayers [ Player.From "Alice"
+                             Player.From "Alice" ]
 
         match tournament with
         | Ok _ -> failwith "Should not be possible to add duplicate players"
@@ -111,18 +108,18 @@ type TestClass() =
     [<Category("addPlayers")>]
     member this.``multiple players can be added at once``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Bob"; "Alice" ]
+            Tournament.Create 1
+            >>= addPlayers [ Player.From "Bob"
+                             Player.From "Alice" ]
             |> unwrap
 
-        CollectionAssert.AreEqual([ "Alice"; "Bob" ], tournament.Players)
+        CollectionAssert.AreEqual([ "Alice"; "Bob" ], names tournament.Players)
 
     [<Test>]
     [<Category("startRound")>]
     member this.``round can be started``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"; "Bob" ]
+            Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
             |> unwrap
@@ -133,8 +130,7 @@ type TestClass() =
     [<Category("startRound")>]
     member this.``round cannot be started if round is already ongoing``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"; "Bob" ]
+            Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
             >>= startRound
@@ -146,7 +142,7 @@ type TestClass() =
     [<Test>]
     [<Category("startRound")>]
     member this.``round cannot be started without pairings``() =
-        let tournament = createTournament 1 >>= startRound
+        let tournament = Tournament.Create 1 >>= startRound
 
         match tournament with
         | Ok _ -> failwith "Did not throw"
@@ -156,11 +152,7 @@ type TestClass() =
     [<Category("finishRound")>]
     member this.``round can be marked as finished``() =
         let t1: Tournament =
-            createTournament 2
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "James"
-                             "Michael" ]
+            Tournament.Create(2, [ "Alice"; "Bob"; "James"; "Michael" ])
             >>= pair Shuffle
             >>= startRound // round 1
             >>= score 1 (15, 5)
@@ -186,7 +178,7 @@ type TestClass() =
     [<Test>]
     [<Category("finishRound")>]
     member this.``current round cannot be finished if round has not started yet``() =
-        let tournament = createTournament 1 >>= finishRound
+        let tournament = Tournament.Create 1 >>= finishRound
 
         match tournament with
         | Ok _ -> failwith "Did not throw"
@@ -196,8 +188,7 @@ type TestClass() =
     [<Category("finishRound")>]
     member this.``current round cannot be finished if tournament is already finished``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"; "Bob" ]
+            Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
             >>= score 1 (10, 10)
@@ -212,8 +203,7 @@ type TestClass() =
     [<Category("finishRound")>]
     member this.``current round cannot be finished if unscored pairings exist``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"; "Bob" ]
+            Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
             >>= finishRound
@@ -226,31 +216,26 @@ type TestClass() =
     [<Category("pair")>]
     member this.``pairings for current round are determined by the order of pairing algorithm``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "James"
-                             "Michael" ]
+            Tournament.Create(1, [ "Alice"; "Bob"; "James"; "Michael" ])
             >>= pair Swiss
             |> unwrap
 
         let pairings = tournament.Rounds.[0].Pairings
-        Assert.AreEqual("Alice", pairings.[0].Player1)
-        Assert.AreEqual("Bob", pairings.[0].Player2)
-        Assert.AreEqual("James", pairings.[1].Player1)
-        Assert.AreEqual("Michael", pairings.[1].Player2)
+        Assert.AreEqual(Player.From "Alice", pairings.[0].Player1)
+        Assert.AreEqual(Player.From "Bob", pairings.[0].Player2)
+        Assert.AreEqual(Player.From "James", pairings.[1].Player1)
+        Assert.AreEqual(Player.From "Michael", pairings.[1].Player2)
 
     [<Test>]
     [<Category("pair")>]
     member this.``on odd number of players, BYE is added to player list for pairings``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice" ]
+            Tournament.Create(1, [ "Alice" ])
             >>= pair Swiss
             |> unwrap
 
-        Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)
-        Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2)
+        Assert.AreEqual(Player.From "Alice", tournament.Rounds.[0].Pairings.[0].Player1)
+        Assert.AreEqual(Player.From "BYE", tournament.Rounds.[0].Pairings.[0].Player2)
 
     [<Test>]
     [<Category("score")>]
@@ -263,7 +248,7 @@ type TestClass() =
                     table 456 ("James", "Michael") ] } ]
 
         let tournament =
-            { (createTournament 1 |> unwrap) with Rounds = unscored }
+            { (Tournament.Create 1 |> unwrap) with Rounds = unscored }
             |> score 456 (13, 8)
             |> unwrap
 
@@ -284,7 +269,7 @@ type TestClass() =
                 Pairings = [ table 123 ("Bob", "Alice") ] } ]
 
         let tournament =
-            { (createTournament 1 |> unwrap) with Rounds = unscored }
+            { (Tournament.Create 1 |> unwrap) with Rounds = unscored }
             |> score 123 (15, 5)
             |> unwrap
 
@@ -296,8 +281,7 @@ type TestClass() =
     [<Category("score")>]
     member this.``score returns Error if specified pairing cannot be found``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"; "Bob" ]
+            Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
             >>= score 123 (11, 9)
@@ -309,8 +293,7 @@ type TestClass() =
     [<Test>]
     [<Category("score")>]
     member this.``score returns Error if round has already been marked as finished``() =
-        match createTournament 1
-              >>= addPlayers [ "Alice"; "Bob" ]
+        match Tournament.Create(1, [ "Alice"; "Bob" ])
               >>= pair Shuffle
               >>= startRound
               >>= score 1 (10, 10)
@@ -324,18 +307,14 @@ type TestClass() =
     [<Category("pairings")>]
     member this.``pairings display pairings of current round or last round if tournament is finished``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "James"
-                             "Michael" ]
+            Tournament.Create(1, [ "Alice"; "Bob"; "James"; "Michael" ])
             >>= pair Swiss
             >>= startRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", "Bob")
-              ("James", "Michael") ],
+            [ (Player.From "Alice", Player.From "Bob")
+              (Player.From "James", Player.From "Michael") ],
             pairings tournament
         )
 
@@ -356,21 +335,21 @@ type TestClass() =
               Status = Finished
               Pairings =
                 [ { Number = 1
-                    Player1 = "Alice"
-                    Player2 = "Bob"
+                    Player1 = Player.From "Alice"
+                    Player2 = Player.From "Bob"
                     Player1Score = 4
                     Player2Score = 16 }
                   { Number = 2
-                    Player1 = "James"
-                    Player2 = "Michael"
+                    Player1 = Player.From "James"
+                    Player2 = Player.From "Michael"
                     Player1Score = 15
                     Player2Score = 5 } ] }
 
         CollectionAssert.AreEqual(
-            [ ("Bob", 16)
-              ("James", 15)
-              ("Michael", 5)
-              ("Alice", 4) ],
+            [ (Player.From "Bob", 16)
+              (Player.From "James", 15)
+              (Player.From "Michael", 5)
+              (Player.From "Alice", 4) ],
             round.Standings
         )
 
@@ -389,13 +368,13 @@ type TestClass() =
                   [ table 1 ("Michael", "Alice") |> result (13, 7)
                     table 2 ("Bob", "James") |> result (10, 10) ] } ]
 
-        let tournament = { (createTournament 2 |> unwrap) with Rounds = rounds }
+        let tournament = { (Tournament.Create 2 |> unwrap) with Rounds = rounds }
 
         CollectionAssert.AreEqual(
-            [ ("Michael", 32)
-              ("Alice", 19)
-              ("Bob", 18)
-              ("James", 11) ],
+            [ (Player.From "Michael", 32)
+              (Player.From "Alice", 19)
+              (Player.From "Bob", 18)
+              (Player.From "James", 11) ],
             tournament.Standings()
         )
 
@@ -403,18 +382,14 @@ type TestClass() =
     [<Category("standings")>]
     member this.``total standings are equal to player list if no rounds have been played``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "James"
-                             "Michael" ]
+            Tournament.Create(1, [ "Alice"; "Bob"; "James"; "Michael" ])
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 0)
-              ("Bob", 0)
-              ("James", 0)
-              ("Michael", 0) ],
+            [ (Player.From "Alice", 0)
+              (Player.From "Bob", 0)
+              (Player.From "James", 0)
+              (Player.From "Michael", 0) ],
             tournament.Standings()
         )
 
@@ -422,18 +397,14 @@ type TestClass() =
     [<Category("swap")>]
     member this.``swap changes places of two players in current round``() =
         let tournament =
-            createTournament 1
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "James"
-                             "Michael" ]
+            Tournament.Create(1, [ "Alice"; "Bob"; "James"; "Michael" ])
             >>= pair Swiss
             >>= swap "Bob" "Michael"
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", "Michael")
-              ("James", "Bob") ],
+            [ (Player.From "Alice", Player.From "Michael")
+              (Player.From "James", Player.From "Bob") ],
             pairings tournament
         )
 
@@ -446,7 +417,7 @@ type TestClass() =
                 Pairings = [ table 1 ("Alice", "Bob") ] } ]
 
         let tournament =
-            { (createTournament 1 |> unwrap) with Rounds = rounds }
+            { (Tournament.Create 1 |> unwrap) with Rounds = rounds }
             |> swap "Alice" "Bob"
             |> unwrap
 
@@ -462,7 +433,7 @@ type TestClass() =
                   [ table 1 ("Alice", "Bob")
                     table 2 ("James", "Michael") ] } ]
 
-        match ({ (createTournament 1 |> unwrap) with Rounds = rounds }
+        match ({ (Tournament.Create 1 |> unwrap) with Rounds = rounds }
                |> swap "Alice" "Nyarlathotep")
             with
         | Ok _ -> failwith "Trying to swap nonexistent players should return Error"
@@ -470,40 +441,41 @@ type TestClass() =
 
     [<Test>]
     [<Category("swap")>]
-    member this.``swap returns Error if either player's initial round has been scored``() =
-        let rounds =
-            [ { Number = 1
-                Status = Pregame
-                Pairings =
-                  [ table 1 ("Alice", "Bob") |> result (19, 1)
-                    table 2 ("James", "Michael") ] } ]
-
-        match ({ (createTournament 1 |> unwrap) with Rounds = rounds }
-               |> swap "Alice" "Michael")
+    member this.``swap returns Error if round has already started``() =
+        match Tournament.Create(1, [ "Alice"; "Bob"; "James"; "Michael" ])
+              >>= pair Swiss
+              >>= startRound
+              >>= swap "Alice" "Michael"
             with
-        | Ok _ -> failwith "Trying to swap players should return Error if either player's round is scored"
-        | Error err -> Assert.AreEqual("Can't swap players if either player's round has already been scored!", err)
+        | Ok _ -> failwith "Trying to swap players should return Error if round has already started"
+        | Error err -> Assert.AreEqual("Can't swap players: round already started!", err)
 
     [<Test>]
     member this.``tournament can be run successfully from start to finish ensuring unique pairings each round``() =
+        let Alice = Player.From "Alice"
+        let Bob = Player.From "Bob"
+        let Jack = Player.From "Jack"
+        let James = Player.From "James"
+        let Lily = Player.From "Lily"
+        let Michael = Player.From "Michael"
 
         // ROUND 1 PAIRINGS
         let round1 =
-            createTournament 4
-            >>= addPlayers [ "Alice"
-                             "Bob"
-                             "Jack"
-                             "James"
-                             "Lily"
-                             "Michael" ]
+            Tournament.Create(4)
+            >>= addPlayers [ Alice
+                             Bob
+                             Jack
+                             James
+                             Lily
+                             Michael ]
             >>= pair Swiss
             >>= startRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", "Bob")
-              ("Jack", "James")
-              ("Lily", "Michael") ],
+            [ (Alice, Bob)
+              (Jack, James)
+              (Lily, Michael) ],
             pairings round1
         )
 
@@ -517,12 +489,12 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 15)
-              ("Michael", 13)
-              ("Jack", 11)
-              ("James", 9)
-              ("Lily", 7)
-              ("Bob", 5) ],
+            [ (Alice, 15)
+              (Michael, 13)
+              (Jack, 11)
+              (James, 9)
+              (Lily, 7)
+              (Bob, 5) ],
             round1Finished.Standings()
         )
 
@@ -534,9 +506,9 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", "Michael")
-              ("Jack", "Lily") // Jack has already played James -> Lily is next eligible opponent
-              ("James", "Bob") ],
+            [ (Alice, Michael)
+              (Jack, Lily) // Jack has already played James -> Lily is next eligible opponent
+              (James, Bob) ],
             pairings round2
         )
 
@@ -550,12 +522,12 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 35)
-              ("Lily", 23)
-              ("James", 18)
-              ("Bob", 16)
-              ("Jack", 15)
-              ("Michael", 13) ],
+            [ (Alice, 35)
+              (Lily, 23)
+              (James, 18)
+              (Bob, 16)
+              (Jack, 15)
+              (Michael, 13) ],
             round2Finished.Standings()
         )
 
@@ -567,9 +539,9 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", "Lily")
-              ("James", "Michael") // James has already played Jack & Bob -> Michael is the only eligible opponent
-              ("Bob", "Jack") ],
+            [ (Alice, Lily)
+              (James, Michael) // James has already played Jack & Bob -> Michael is the only eligible opponent
+              (Bob, Jack) ],
             pairings round3
         )
 
@@ -583,12 +555,12 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 55)
-              ("James", 27)
-              ("Bob", 26)
-              ("Jack", 25)
-              ("Michael", 24)
-              ("Lily", 23) ],
+            [ (Alice, 55)
+              (James, 27)
+              (Bob, 26)
+              (Jack, 25)
+              (Michael, 24)
+              (Lily, 23) ],
             round3Finished.Standings()
         )
 
@@ -600,9 +572,9 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", "James")
-              ("Bob", "Lily") // Bob has already played Jack and the next opponent, Michael, would leave Jack & Lily for last, who have already played -> Lily is the only eligible opponent
-              ("Jack", "Michael") ],
+            [ (Alice, James)
+              (Bob, Lily) // Bob has already played Jack and the next opponent, Michael, would leave Jack & Lily for last, who have already played -> Lily is the only eligible opponent
+              (Jack, Michael) ],
             pairings round4
         )
 
@@ -616,11 +588,11 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 58)
-              ("James", 44)
-              ("Jack", 40)
-              ("Bob", 35)
-              ("Lily", 34)
-              ("Michael", 29) ],
+            [ (Alice, 58)
+              (James, 44)
+              (Jack, 40)
+              (Bob, 35)
+              (Lily, 34)
+              (Michael, 29) ],
             round4Finished.Standings()
         )
