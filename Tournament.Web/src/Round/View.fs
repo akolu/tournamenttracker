@@ -123,7 +123,8 @@ let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
                                 Standings(
                                     {| rounds = [ state.Round ]
                                        total = state.StandingsAcc
-                                       extra = None |}
+                                       extra = None
+                                       onRowClick = None |}
                                 )
                             ]
                         ]

@@ -10,7 +10,8 @@ Fable.Core.JsInterop.importSideEffects "./Standings.scss"
 let Standings
     (props: {| rounds: Round list
                total: (Player * int) list
-               extra: option<Player * int -> ReactElement> |})
+               extra: option<Player * int -> ReactElement>
+               onRowClick: option<(Player * int) -> unit> |})
     =
 
     let getPlayerScore player (round: Round) =
@@ -41,6 +42,10 @@ let Standings
             @ (props.total
                |> List.mapi (fun i (player, score) ->
                    Html.div [
+                       prop.onClick (fun _ ->
+                           match props.onRowClick with
+                           | Some fn -> fn (player, score)
+                           | None -> ())
                        prop.children (
                            [ Html.span [
                                  prop.custom ("data-ordinal", (sprintf "%d." (i + 1)))

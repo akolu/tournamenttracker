@@ -10,7 +10,7 @@ open System
 type PageModel =
     | Settings of Settings.State.SettingsModel
     | Round of Round.State.RoundModel
-    | Results
+    | Results of Results.State.ResultsModel
 
 type Page =
     { Index: int
@@ -25,6 +25,11 @@ type Page =
         | Round r -> r
         | _ -> raise (Exception("Could not coerce Page to Round"))
 
+    static member results r =
+        match r with
+        | Results r -> r
+        | _ -> raise (Exception("Could not coerce Page to Results"))
+
 type State =
     { Tournament: Tournament
       CurrentPage: Page }
@@ -34,6 +39,7 @@ type Action =
     | SetActivePage of int
     | SettingsMsg of Settings.State.SettingsMsg
     | RoundMsg of Round.State.RoundMsg
+    | ResultsMsg of Results.State.ResultsMsg
 
 let state () =
     let settings, settingsCmd =
@@ -53,7 +59,9 @@ let private getActivePage i t =
     | 0 ->
         { Index = 0
           Model = Settings(fst (Settings.State.init t.Rounds.Length (List.map (fun p -> p.Name, p.Rating) t.Players))) }
-    | num when num > t.Rounds.Length -> { Index = num; Model = Results }
+    | num when num > t.Rounds.Length ->
+        { Index = num
+          Model = Results(fst (Results.State.init t)) }
     | num ->
         { Index = num
           Model = Round(fst (Round.State.init num t)) }
@@ -113,3 +121,9 @@ let update (msg: Action) (state: State) =
         | Round.State.ConfirmScore p ->
             updateTournament (score p.Number (p.Player1Score, p.Player2Score)) state, Cmd.map RoundMsg cmd
         | _ -> { state with CurrentPage = { state.CurrentPage with Model = Round res } }, Cmd.map RoundMsg cmd
+    | ResultsMsg msg' ->
+        let res, cmd = Results.State.update msg' (Page.results state.CurrentPage.Model)
+
+        match msg' with
+        | Results.State.ConfirmBonus p -> updateTournament (bonus p) state, Cmd.map ResultsMsg cmd
+        | _ -> { state with CurrentPage = { state.CurrentPage with Model = Results res } }, Cmd.map ResultsMsg cmd

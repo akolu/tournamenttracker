@@ -16,7 +16,7 @@ let TournamentContainer () =
         match state.CurrentPage.Model with
         | Settings s -> Settings.View.Settings s (SettingsMsg >> dispatch)
         | Round rnd -> Round.View.Round rnd (RoundMsg >> dispatch)
-        | _ -> Results.View.Results(state.Tournament)
+        | Results res -> Results.View.Results res (ResultsMsg >> dispatch)
 
     Html.div [
         prop.className "TournamentContainer__div--root"
