@@ -34,11 +34,9 @@ type Tournament =
         | None -> (List.rev this.Rounds).Head.Pairings
 
     member this.Standings rnd =
-        match this.CurrentRound with
-        | Some rnd when rnd.Number = 1 ->
-            this.Players
-            |> List.map (fun p -> p, p.BonusScore)
-        | _ ->
+        if this.Rounds.Head.Pairings.IsEmpty then
+            this.Players |> List.map (fun p -> p, 0)
+        else
             this.Rounds
             |> List.take rnd
             |> List.collect ((fun r -> r.Standings))
@@ -91,3 +89,8 @@ let score number result (tournament: Tournament) =
 
 let swap player1 player2 (tournament: Tournament) =
     tournament.ModifyCurrentRound(swapPlayers player1 player2)
+
+let bonus (player, score) tournament =
+    match List.tryFind (fun p -> p.Name = player) tournament.Players with
+    | Some p -> Ok { tournament with Players = (replace ((=) p) { p with BonusScore = score }) tournament.Players }
+    | None -> Error(sprintf "Player %s not found" player)

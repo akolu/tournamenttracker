@@ -1,8 +1,6 @@
 module Settings.State
 
 open Elmish
-open Tournament.Utils
-open Tournament.Tournament
 
 type ValidationFunction =
     | Players

@@ -12,6 +12,20 @@
 
         & > div {
             grid-template-columns: minmax(0, 20%) repeat(auto-fit, minmax(60px, 1fr) minmax(10%, 1fr));
+
+            & > span:first-child > b::before {
+                content: '#';
+                display: inline-block;
+                width: 30px;
+                padding-left: 5px;
+            }
+
+            & > span[data-ordinal]::before {
+                content: attr(data-ordinal);
+                display: inline-block;
+                width: 30px;
+                padding-left: 5px;
+            }
         }
 
         & > div:first-child {
