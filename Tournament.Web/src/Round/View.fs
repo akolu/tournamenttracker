@@ -62,7 +62,7 @@ let private Pairing (pairing: Pairing) =
         prop.onClick (fun _ -> dispatch (Edit(Some pairing)))
         prop.children [
             Html.span pairing.Number
-            Html.span pairing.Player1.Name
+            Html.span pairing.Player1
             Html.span [
                 prop.children (
                     score
@@ -71,14 +71,15 @@ let private Pairing (pairing: Pairing) =
                           prop.onChange (fun num -> dispatch (SetPlayer1Score num)) ]
                 )
             ]
-            Html.span pairing.Player2.Name
+            Html.span pairing.Player2
             Html.span [
                 prop.children (score pairing.Player2Score [ prop.onChange (fun num -> dispatch (SetPlayer2Score num)) ])
             ]
         ]
     ]
 
-let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
+[<ReactComponent>]
+let Round (state, dispatch) =
     React.contextProvider (
         context,
         (state, dispatch),
@@ -120,12 +121,7 @@ let Round (state: RoundModel) (dispatch: RoundMsg -> unit) =
                             column.isOneThird
                             prop.children [
                                 Bulma.Divider.divider "Standings"
-                                Standings(
-                                    {| rounds = [ state.Round ]
-                                       total = state.StandingsAcc
-                                       extra = None
-                                       onRowClick = None |}
-                                )
+                                Components.Standings(rounds = [ state.Round ], total = state.StandingsAcc)
                             ]
                         ]
                     ]

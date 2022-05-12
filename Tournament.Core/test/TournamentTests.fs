@@ -13,8 +13,8 @@ type TestClass() =
 
     let table number (p1, p2) =
         { Number = number
-          Player1 = Player.From p1
-          Player2 = Player.From p2
+          Player1 = p1
+          Player2 = p2
           Player1Score = 0
           Player2Score = 0 }
 
@@ -221,10 +221,10 @@ type TestClass() =
             |> unwrap
 
         let pairings = tournament.Rounds.[0].Pairings
-        Assert.AreEqual(Player.From "Alice", pairings.[0].Player1)
-        Assert.AreEqual(Player.From "Bob", pairings.[0].Player2)
-        Assert.AreEqual(Player.From "James", pairings.[1].Player1)
-        Assert.AreEqual(Player.From "Michael", pairings.[1].Player2)
+        Assert.AreEqual("Alice", pairings.[0].Player1)
+        Assert.AreEqual("Bob", pairings.[0].Player2)
+        Assert.AreEqual("James", pairings.[1].Player1)
+        Assert.AreEqual("Michael", pairings.[1].Player2)
 
     [<Test>]
     [<Category("pair")>]
@@ -234,8 +234,8 @@ type TestClass() =
             >>= pair Swiss
             |> unwrap
 
-        Assert.AreEqual(Player.From "Alice", tournament.Rounds.[0].Pairings.[0].Player1)
-        Assert.AreEqual(Player.From "BYE", tournament.Rounds.[0].Pairings.[0].Player2)
+        Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)
+        Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2)
 
     [<Test>]
     [<Category("score")>]
@@ -313,8 +313,8 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Player.From "Alice", Player.From "Bob")
-              (Player.From "James", Player.From "Michael") ],
+            [ ("Alice", "Bob")
+              ("James", "Michael") ],
             pairings tournament
         )
 
@@ -335,21 +335,21 @@ type TestClass() =
               Status = Finished
               Pairings =
                 [ { Number = 1
-                    Player1 = Player.From "Alice"
-                    Player2 = Player.From "Bob"
+                    Player1 = "Alice"
+                    Player2 = "Bob"
                     Player1Score = 4
                     Player2Score = 16 }
                   { Number = 2
-                    Player1 = Player.From "James"
-                    Player2 = Player.From "Michael"
+                    Player1 = "James"
+                    Player2 = "Michael"
                     Player1Score = 15
                     Player2Score = 5 } ] }
 
         CollectionAssert.AreEqual(
-            [ (Player.From "Bob", 16)
-              (Player.From "James", 15)
-              (Player.From "Michael", 5)
-              (Player.From "Alice", 4) ],
+            [ ("Bob", 16)
+              ("James", 15)
+              ("Michael", 5)
+              ("Alice", 4) ],
             round.Standings
         )
 
@@ -371,10 +371,10 @@ type TestClass() =
         let tournament = { (Tournament.Create 2 |> unwrap) with Rounds = rounds }
 
         CollectionAssert.AreEqual(
-            [ (Player.From "Michael", 32)
-              (Player.From "Alice", 19)
-              (Player.From "Bob", 18)
-              (Player.From "James", 11) ],
+            [ ("Michael", 32)
+              ("Alice", 19)
+              ("Bob", 18)
+              ("James", 11) ],
             tournament.Standings()
         )
 
@@ -386,10 +386,10 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Player.From "Alice", 0)
-              (Player.From "Bob", 0)
-              (Player.From "James", 0)
-              (Player.From "Michael", 0) ],
+            [ ("Alice", 0)
+              ("Bob", 0)
+              ("James", 0)
+              ("Michael", 0) ],
             tournament.Standings()
         )
 
@@ -403,8 +403,8 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Player.From "Alice", Player.From "Michael")
-              (Player.From "James", Player.From "Bob") ],
+            [ ("Alice", "Michael")
+              ("James", "Bob") ],
             pairings tournament
         )
 
@@ -472,30 +472,23 @@ type TestClass() =
 
     [<Test>]
     member this.``tournament can be run successfully from start to finish ensuring unique pairings each round``() =
-        let Alice = Player.From "Alice"
-        let Bob = Player.From "Bob"
-        let Jack = Player.From "Jack"
-        let James = Player.From "James"
-        let Lily = Player.From "Lily"
-        let Michael = Player.From "Michael"
-
         // ROUND 1 PAIRINGS
         let round1 =
             Tournament.Create(4)
-            >>= addPlayers [ Alice
-                             Bob
-                             Jack
-                             James
-                             Lily
-                             Michael ]
+            >>= addPlayers [ Player.From "Alice"
+                             Player.From "Bob"
+                             Player.From "Jack"
+                             Player.From "James"
+                             Player.From "Lily"
+                             Player.From "Michael" ]
             >>= pair Swiss
             >>= startRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, Bob)
-              (Jack, James)
-              (Lily, Michael) ],
+            [ ("Alice", "Bob")
+              ("Jack", "James")
+              ("Lily", "Michael") ],
             pairings round1
         )
 
@@ -509,12 +502,12 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, 15)
-              (Michael, 13)
-              (Jack, 11)
-              (James, 9)
-              (Lily, 7)
-              (Bob, 5) ],
+            [ ("Alice", 15)
+              ("Michael", 13)
+              ("Jack", 11)
+              ("James", 9)
+              ("Lily", 7)
+              ("Bob", 5) ],
             round1Finished.Standings()
         )
 
@@ -526,9 +519,9 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, Michael)
-              (Jack, Lily) // Jack has already played James -> Lily is next eligible opponent
-              (James, Bob) ],
+            [ ("Alice", "Michael")
+              ("Jack", "Lily") // Jack has already played James -> Lily is next eligible opponent
+              ("James", "Bob") ],
             pairings round2
         )
 
@@ -542,12 +535,12 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, 35)
-              (Lily, 23)
-              (James, 18)
-              (Bob, 16)
-              (Jack, 15)
-              (Michael, 13) ],
+            [ ("Alice", 35)
+              ("Lily", 23)
+              ("James", 18)
+              ("Bob", 16)
+              ("Jack", 15)
+              ("Michael", 13) ],
             round2Finished.Standings()
         )
 
@@ -559,9 +552,9 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, Lily)
-              (James, Michael) // James has already played Jack & Bob -> Michael is the only eligible opponent
-              (Bob, Jack) ],
+            [ ("Alice", "Lily")
+              ("James", "Michael") // James has already played Jack & Bob -> Michael is the only eligible opponent
+              ("Bob", "Jack") ],
             pairings round3
         )
 
@@ -575,12 +568,12 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, 55)
-              (James, 27)
-              (Bob, 26)
-              (Jack, 25)
-              (Michael, 24)
-              (Lily, 23) ],
+            [ ("Alice", 55)
+              ("James", 27)
+              ("Bob", 26)
+              ("Jack", 25)
+              ("Michael", 24)
+              ("Lily", 23) ],
             round3Finished.Standings()
         )
 
@@ -592,9 +585,9 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, James)
-              (Bob, Lily) // Bob has already played Jack and the next opponent, Michael, would leave Jack & Lily for last, who have already played -> Lily is the only eligible opponent
-              (Jack, Michael) ],
+            [ ("Alice", "James")
+              ("Bob", "Lily") // Bob has already played Jack and the next opponent, Michael, would leave Jack & Lily for last, who have already played -> Lily is the only eligible opponent
+              ("Jack", "Michael") ],
             pairings round4
         )
 
@@ -608,11 +601,11 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ (Alice, 58)
-              (James, 44)
-              (Jack, 40)
-              (Bob, 35)
-              (Lily, 34)
-              (Michael, 29) ],
+            [ ("Alice", 58)
+              ("James", 44)
+              ("Jack", 40)
+              ("Bob", 35)
+              ("Lily", 34)
+              ("Michael", 29) ],
             round4Finished.Standings()
         )

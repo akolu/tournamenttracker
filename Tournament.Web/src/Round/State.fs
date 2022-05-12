@@ -4,12 +4,11 @@ open Elmish
 open Tournament.Pairing
 open Tournament.Round
 open Tournament.Tournament
-open Tournament.Player
 
 type RoundModel =
     { Round: Round
       Form: Pairing option
-      StandingsAcc: (Player * int) list }
+      StandingsAcc: (string * int) list }
 
 type RoundMsg =
     | Edit of Pairing option

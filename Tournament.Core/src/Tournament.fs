@@ -35,7 +35,7 @@ type Tournament =
 
     member this.Standings rnd =
         if this.Rounds.Head.Pairings.IsEmpty then
-            this.Players |> List.map (fun p -> p, 0)
+            this.Players |> List.map (fun p -> p.Name, 0)
         else
             this.Rounds
             |> List.take rnd

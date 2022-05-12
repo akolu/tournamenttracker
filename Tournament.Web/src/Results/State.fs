@@ -7,8 +7,8 @@ open Tournament.Player
 
 type ResultsModel =
     { Rounds: Round list
-      Extras: (Player * int) list
-      TotalScores: (Player * int) list
+      Bonus: (string * int) list
+      TotalScores: (string * int) list
       Form: (string * int) option }
 
 type ResultsMsg =
@@ -18,12 +18,16 @@ type ResultsMsg =
 
 let private getTotalScore (t: Tournament) =
     t.Standings()
-    |> List.map (fun (p, s) -> (p, s + p.BonusScore))
+    |> List.map (fun res ->
+        match List.tryFind (fun p -> p.Name = fst res) t.Players with
+        | Some p -> (fst res, snd res + p.BonusScore)
+        | None -> res)
     |> List.sortBy (fun (_, score) -> -score)
+
 
 let init (t: Tournament) =
     { Rounds = t.Rounds
-      Extras = List.map (fun p -> p, p.BonusScore) t.Players
+      Bonus = List.map (fun p -> p.Name, p.BonusScore) t.Players
       TotalScores = getTotalScore t
       Form = None },
     Cmd.none
@@ -31,5 +35,5 @@ let init (t: Tournament) =
 let update msg model =
     match msg with
     | Edit p -> { model with Form = p }, Cmd.none
-    | SetBonus num -> { model with Form = Some((fst model.Form.Value), num) }, Cmd.none
+    | SetBonus num -> { model with Form = Some((fst model.Form.Value), num) }, Cmd.ofMsg (Edit None)
     | _ -> model, Cmd.none

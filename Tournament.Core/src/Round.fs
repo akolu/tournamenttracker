@@ -31,10 +31,10 @@ let private pairsToPairings pairs =
           Player2Score = 0 })
 
 // TODO: change fn to return Result
-let internal createPairings fn (standings: List<Player * int>) round =
+let internal createPairings fn (standings: List<string * int>) round =
     let playerList =
         match standings with
-        | list when (<>) ((%) list.Length 2) 0 -> standings @ [ (Player.From "BYE", 0) ]
+        | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", 0) ]
         | _ -> standings
 
     if round.Status = Pregame then
@@ -44,12 +44,12 @@ let internal createPairings fn (standings: List<Player * int>) round =
 
 let private validatePlayerSwap player round =
     let exists player pairing =
-        ((=) player pairing.Player1.Name)
-        || ((=) player pairing.Player2.Name)
+        ((=) player pairing.Player1)
+        || ((=) player pairing.Player2)
 
     match List.tryFind (exists player) round.Pairings with
-    | Some p when p.Player1.Name = player -> Ok p.Player1
-    | Some p when p.Player2.Name = player -> Ok p.Player2
+    | Some p when p.Player1 = player -> Ok p.Player1
+    | Some p when p.Player2 = player -> Ok p.Player2
     | _ -> Error(sprintf "Player %s not found" player)
 
 let internal swapPlayers player1 player2 round =

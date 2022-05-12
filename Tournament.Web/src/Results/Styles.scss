@@ -9,7 +9,6 @@
     }
 
     & .Standings__root {
-
         & > div {
             grid-template-columns: minmax(0, 20%) repeat(auto-fit, minmax(60px, 1fr) minmax(10%, 1fr));
 
@@ -31,6 +30,11 @@
         & > div:first-child {
             border-bottom: $table_border;
         }
+
+        & > div:not(:first-child):hover {
+            cursor: pointer;
+            background-color: aliceblue;
+        }        
 
         & > div:not(:first-child) {
             border-right: $table_border;
@@ -61,5 +65,10 @@
             margin: 0;
             padding: 0;
         }
+    }
+
+    & > span > button {
+        margin-top: .9rem;
+        margin-right: .5rem;
     }
 }

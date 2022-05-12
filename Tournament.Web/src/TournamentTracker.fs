@@ -13,8 +13,8 @@ type PlayerDTO =
 
 type PairingDTO =
     {| number: int
-       player1: PlayerDTO
-       player2: PlayerDTO
+       player1: string
+       player2: string
        player1Score: int
        player2Score: int |}
 
@@ -41,8 +41,8 @@ let private SerializePlayer (p: Tournament.Player.Player) =
 
 let private SerializePairing (p: Tournament.Pairing.Pairing) =
     {| number = p.Number
-       player1 = SerializePlayer p.Player1
-       player2 = SerializePlayer p.Player2
+       player1 = p.Player1
+       player2 = p.Player2
        player1Score = p.Player1Score
        player2Score = p.Player2Score |}
 
@@ -50,8 +50,8 @@ let private ParsePairing (p: obj) : Tournament.Pairing.Pairing =
     p :?> PairingDTO
     |> (fun p ->
         { Number = p.number
-          Player1 = ParsePlayer p.player1
-          Player2 = ParsePlayer p.player2
+          Player1 = p.player1
+          Player2 = p.player2
           Player1Score = p.player1Score
           Player2Score = p.player2Score })
 
@@ -124,9 +124,7 @@ let standings tournament =
     tournament
     |> ParseTournament
     |> (fun t -> t.Standings())
-    |> List.map (fun (name, score) ->
-        {| player = SerializePlayer name
-           score = score |})
+    |> List.map (fun (name, score) -> {| player = name; score = score |})
     |> Array.ofList
 
 let pairings tournament =
