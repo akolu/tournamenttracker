@@ -19,10 +19,12 @@ type RoundMsg =
     | FinishRound
 
 let init num t =
-    { Round = t.Rounds |> List.find (fun r -> r.Number = num)
+    { Round =
+        t.Rounds
+        |> List.tryFind (fun r -> r.Number = num)
+        |> Option.defaultWith (fun () -> Round.Empty)
       Form = None
-      StandingsAcc = t.Standings num },
-    Cmd.none
+      StandingsAcc = t.Standings num }
 
 let update msg model =
     match msg with

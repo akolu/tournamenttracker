@@ -34,7 +34,9 @@ type Tournament =
         | None -> (List.rev this.Rounds).Head.Pairings
 
     member this.Standings rnd =
-        if this.Rounds.Head.Pairings.IsEmpty then
+        if (this.Rounds.IsEmpty) then
+            []
+        elif this.Rounds.Head.Pairings.IsEmpty then
             this.Players |> List.map (fun p -> p.Name, 0)
         else
             this.Rounds
@@ -60,6 +62,8 @@ type Tournament =
         | _ -> Error "Tournament should have at least one round"
 
     static member Create rounds = Tournament.Create(rounds, [])
+
+    static member Empty = { Rounds = []; Players = [] }
 
 
 let rec addPlayers (players: Player list) (tournament: Tournament) =
@@ -94,3 +98,16 @@ let bonus (player, score) tournament =
     match List.tryFind (fun p -> p.Name = player) tournament.Players with
     | Some p -> Ok { tournament with Players = (replace ((=) p) { p with BonusScore = score }) tournament.Players }
     | None -> Error(sprintf "Player %s not found" player)
+
+// let bonus (list: (string * int) list) tournament =
+//     let players =
+//         tournament.Players
+//         |> List.fold
+//             (fun acc player ->
+//                 acc
+//                 @ match List.tryFind (fun res -> player.Name = fst res) list with
+//                   | Some res -> [ { player with BonusScore = snd res } ]
+//                   | None -> [ player ])
+//             []
+
+//     Ok { tournament with Players = players }

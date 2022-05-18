@@ -14,17 +14,18 @@ type Components() =
         let (state, dispatch) = React.useContext (tournamentContext)
 
         let page =
-            match state.CurrentPage.Model with
-            | Settings s -> Settings.View.Settings(s, (SettingsMsg >> dispatch))
-            | Round rnd -> Round.View.Round(rnd, (RoundMsg >> dispatch))
-            | Results res -> Results.View.Results(res, (ResultsMsg >> dispatch))
+            match state.CurrentTab with
+            | 0 -> Settings.View.Settings(state.PageModels.Settings, (SettingsMsg >> dispatch))
+            | rnd when rnd > state.Tournament.Rounds.Length ->
+                Results.View.Results(state.PageModels.Results, (ResultsMsg >> dispatch))
+            | _ -> Round.View.Round(state.PageModels.Round, (RoundMsg >> dispatch))
 
         Html.div [
             prop.className "TournamentContainer__div--root"
             prop.children [
                 Components.Tabs(
                     onTabChanged = (fun tab -> dispatch (SetActivePage tab)),
-                    selected = state.CurrentPage.Index,
+                    selected = state.CurrentTab,
                     rounds = state.Tournament.Rounds
                 )
                 Html.div [

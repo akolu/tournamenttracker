@@ -16,10 +16,9 @@ let Results (state, dispatch) =
 
     React.useEffect (
         (fun _ ->
-            match state.Form with
-            | Some _ -> (unbox<HTMLInputElement> p1Ref.current).select ()
-            | None -> ()),
-        [| box state.Form.IsSome |]
+            if (state.Form.IsSome) then
+                (unbox<HTMLInputElement> p1Ref.current).select ()),
+        [| box (fst (state.Form |> Option.defaultWith (fun () -> "", 0))) |]
     )
 
     let getBonus player =
@@ -47,14 +46,18 @@ let Results (state, dispatch) =
         | _ -> Html.span (getBonus player)
 
     Html.div [
-        prop.className "Results__root"
+        prop.classes [
+            "Results__root"
+            if state.Form.IsSome then
+                "Results__root--editable"
+        ]
         prop.children [
             Bulma.Divider.divider "Results"
             Components.Standings(
                 rounds = state.Rounds,
                 total = state.TotalScores,
-                onRowClick = (fun p -> dispatch (Edit(Some(p, (getBonus p))))),
-                bonus = renderBonus
+                onClick = (fun p -> dispatch (Edit(Some(p, (getBonus p))))),
+                renderExtra = renderBonus
             )
             Html.span (
                 match state.Form with

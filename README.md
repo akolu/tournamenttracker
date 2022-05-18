@@ -29,6 +29,8 @@ The repo consists of three projects:
 - feat: support player rating as a tiebreaker in Swiss pairings
 - feat: support secondary round score as a tiebreaker in Swiss pairings
 - refactor: return Result from PairingAlgorithm function for better error handling
+- refactor: use List.allPairs for PairingGenerator pairing matrix
+- refactor: use List.except or List.removeAt when popping last item from list (e.g. in PairingGenerator)
 
 ### Webapp
 

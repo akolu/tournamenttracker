@@ -7,32 +7,15 @@ open Tournament.Player
 open Elmish
 open System
 
-type PageModel =
-    | Settings of Settings.State.SettingsModel
-    | Round of Round.State.RoundModel
-    | Results of Results.State.ResultsModel
-
-type Page =
-    { Index: int
-      Model: PageModel }
-    static member settings p =
-        match p with
-        | Settings s -> s
-        | _ -> raise (Exception("Could not coerce Page to Settings"))
-
-    static member round p =
-        match p with
-        | Round r -> r
-        | _ -> raise (Exception("Could not coerce Page to Round"))
-
-    static member results r =
-        match r with
-        | Results r -> r
-        | _ -> raise (Exception("Could not coerce Page to Results"))
+type PageModels =
+    { Settings: Settings.State.SettingsModel
+      Round: Round.State.RoundModel
+      Results: Results.State.ResultsModel }
 
 type State =
     { Tournament: Tournament
-      CurrentPage: Page }
+      PageModels: PageModels
+      CurrentTab: int }
 
 type Action =
     | Score of {| nr: int; result: int * int |}
@@ -41,8 +24,23 @@ type Action =
     | RoundMsg of Round.State.RoundMsg
     | ResultsMsg of Results.State.ResultsMsg
 
+let getPageModels settings (t: Tournament) =
+    let rnd =
+        match t.CurrentRound with
+        | Some r -> r
+        | None -> Tournament.Round.Round.Empty
+
+    { Settings = settings
+      Results = Results.State.init t
+      Round = Round.State.init rnd.Number t }
+
+let updateStateModels state t =
+    { state with
+        Tournament = t
+        PageModels = getPageModels state.PageModels.Settings t }
+
 let state () =
-    let settings, settingsCmd =
+    let settings =
         Settings.State.init
             3
             [ "Aku Ankka", 0
@@ -50,39 +48,31 @@ let state () =
               "Hessu Hopo", 0
               "Pelle Peloton", 0 ]
 
-    { Tournament = { Rounds = []; Players = [] }
-      CurrentPage = { Index = 0; Model = Settings settings } },
-    Cmd.map SettingsMsg settingsCmd
+    { Tournament = Tournament.Empty
+      PageModels = getPageModels settings Tournament.Empty
+      CurrentTab = 0 },
+    Cmd.none
 
-let private getActivePage i t =
+let setActivePage i state =
     match i with
-    | 0 ->
-        { Index = 0
-          Model = Settings(fst (Settings.State.init t.Rounds.Length (List.map (fun p -> p.Name, p.Rating) t.Players))) }
-    | num when num > t.Rounds.Length ->
-        { Index = num
-          Model = Results(fst (Results.State.init t)) }
+    | 0 -> { state with CurrentTab = 0 }
+    | num when num > state.Tournament.Rounds.Length -> { state with CurrentTab = num }
     | num ->
-        { Index = num
-          Model = Round(fst (Round.State.init num t)) }
+        { state with
+            CurrentTab = num
+            PageModels = { state.PageModels with Round = Round.State.init num state.Tournament } }
 
 let createTournament (settings: Settings.State.SettingsModel) state =
     Tournament.Create(settings.Rounds, (settings.Players |> List.map (fun p -> fst p)))
     >>= pair Shuffle
     |> unwrap
-    |> (fun t ->
-        { state with
-            Tournament = t
-            CurrentPage = getActivePage (state.CurrentPage.Index) t })
+    |> (fun t -> updateStateModels state t)
 
-let private updateTournament fn state =
+let private updateRound fn state =
     state.Tournament
     |> fn
     |> unwrap
-    |> (fun t ->
-        { state with
-            Tournament = t
-            CurrentPage = getActivePage (state.CurrentPage.Index) t })
+    |> (fun t -> updateStateModels state t)
 
 let private nextRound tournament =
     tournament
@@ -95,35 +85,41 @@ let private nextRound tournament =
 let update (msg: Action) (state: State) =
     match msg with
     | Score p -> { state with Tournament = state.Tournament |> score p.nr p.result |> unwrap }, Cmd.none
-    | SetActivePage tab -> { state with CurrentPage = getActivePage tab state.Tournament }, Cmd.none
+    | SetActivePage tab -> setActivePage tab state, Cmd.none
     | SettingsMsg msg' ->
-        let res, cmd = Settings.State.update msg' (Page.settings state.CurrentPage.Model)
+        let res, cmd = Settings.State.update msg' state.PageModels.Settings
 
         match msg' with
         | Settings.State.Confirm ->
             createTournament res state,
             Cmd.batch [
                 Cmd.map SettingsMsg cmd
-                Cmd.ofMsg (SetActivePage(state.CurrentPage.Index + 1))
+                Cmd.ofMsg (SetActivePage(state.CurrentTab + 1))
             ]
-        | _ -> { state with CurrentPage = { state.CurrentPage with Model = Settings res } }, Cmd.map SettingsMsg cmd
+        | _ -> { state with PageModels = { state.PageModels with Settings = res } }, Cmd.map SettingsMsg cmd
     | RoundMsg msg' ->
-        let res, cmd = Round.State.update msg' (Page.round state.CurrentPage.Model)
+        let res, cmd = Round.State.update msg' state.PageModels.Round
 
         match msg' with
-        | Round.State.StartRound -> updateTournament startRound state, Cmd.map RoundMsg cmd
+        | Round.State.StartRound -> updateRound startRound state, Cmd.map RoundMsg cmd
         | Round.State.FinishRound ->
-            updateTournament nextRound state,
+            updateRound nextRound state,
             Cmd.batch [
                 Cmd.map RoundMsg cmd
-                Cmd.ofMsg (SetActivePage(state.CurrentPage.Index + 1))
+                Cmd.ofMsg (SetActivePage(state.CurrentTab + 1))
             ]
         | Round.State.ConfirmScore p ->
-            updateTournament (score p.Number (p.Player1Score, p.Player2Score)) state, Cmd.map RoundMsg cmd
-        | _ -> { state with CurrentPage = { state.CurrentPage with Model = Round res } }, Cmd.map RoundMsg cmd
+            updateRound (score p.Number (p.Player1Score, p.Player2Score)) state, Cmd.map RoundMsg cmd
+        | _ -> { state with PageModels = { state.PageModels with Round = res } }, Cmd.map RoundMsg cmd
     | ResultsMsg msg' ->
-        let res, cmd = Results.State.update msg' (Page.results state.CurrentPage.Model)
+        let res, cmd = Results.State.update msg' state.PageModels.Results
 
         match msg' with
-        | Results.State.ConfirmBonus p -> updateTournament (bonus p) state, Cmd.map ResultsMsg cmd
-        | _ -> { state with CurrentPage = { state.CurrentPage with Model = Results res } }, Cmd.map ResultsMsg cmd
+        | Results.State.ConfirmBonus p ->
+            let t = state.Tournament |> (bonus p) |> unwrap
+
+            { state with
+                Tournament = t
+                PageModels = { state.PageModels with Results = res } },
+            Cmd.map ResultsMsg cmd
+        | _ -> { state with PageModels = { state.PageModels with Results = res } }, Cmd.map ResultsMsg cmd

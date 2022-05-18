@@ -23,8 +23,7 @@ type SettingsMsg =
 let init rounds players =
     { Rounds = rounds
       Players = players
-      ValidationErrors = Map.empty },
-    Cmd.none
+      ValidationErrors = Map.empty }
 
 let private uniqueSwissPairingsPossible model =
     System.Console.WriteLine "validating pairings..."

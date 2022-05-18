@@ -1,7 +1,7 @@
+$table_border: 1px solid gainsboro;
+
 .Results__root {
     width: 100%;
-
-    $table_border: 1px solid gainsboro;
 
     & > .Results__table {
         display: grid;
@@ -34,8 +34,8 @@
         & > div:not(:first-child):hover {
             cursor: pointer;
             background-color: aliceblue;
-        }        
-
+        }
+        
         & > div:not(:first-child) {
             border-right: $table_border;
             border-left: $table_border;
@@ -49,10 +49,6 @@
                         max-width: 40px;
                         text-align: center;
                     }
-                }
-
-                & > :not(aside) {
-                    background-color: rgba($color: palegreen, $alpha: 0.1);
                 }
             }
         }
@@ -71,4 +67,13 @@
         margin-top: .9rem;
         margin-right: .5rem;
     }
+}
+
+.Results__root--editable > div.Standings__root > div:not(:first-child) > span:last-child > aside {
+    background-color: rgba($color: gold, $alpha: 0.1);
+    border-left: $table_border;
+}
+
+.Results__root:not(.Results__root--editable) > div.Standings__root > div:not(:first-child) > span:last-child > :not(aside) {
+    background-color: rgba($color: palegreen, $alpha: 0.1);
 }
