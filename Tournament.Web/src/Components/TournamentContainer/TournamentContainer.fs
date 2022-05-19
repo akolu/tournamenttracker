@@ -18,7 +18,7 @@ type Components() =
             | 0 -> Settings.View.Settings(state.PageModels.Settings, (SettingsMsg >> dispatch))
             | rnd when rnd > state.Tournament.Rounds.Length ->
                 Results.View.Results(state.PageModels.Results, (ResultsMsg >> dispatch))
-            | _ -> Round.View.Round(state.PageModels.Round, (RoundMsg >> dispatch))
+            | rnd -> Round.View.Round(state.PageModels.Rounds.[rnd], (RoundMsg >> dispatch))
 
         Html.div [
             prop.className "TournamentContainer__div--root"

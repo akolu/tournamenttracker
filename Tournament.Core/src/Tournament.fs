@@ -48,6 +48,8 @@ type Tournament =
 
     member this.Standings() = this.Standings this.Rounds.Length
 
+    member this.Finished = Seq.forall (fun r -> r.Status = Finished) this.Rounds
+
     static member Create(rounds, players) =
         let defaultRound index =
             { Number = (+) index 1
@@ -93,21 +95,3 @@ let score number result (tournament: Tournament) =
 
 let swap player1 player2 (tournament: Tournament) =
     tournament.ModifyCurrentRound(swapPlayers player1 player2)
-
-let bonus (player, score) tournament =
-    match List.tryFind (fun p -> p.Name = player) tournament.Players with
-    | Some p -> Ok { tournament with Players = (replace ((=) p) { p with BonusScore = score }) tournament.Players }
-    | None -> Error(sprintf "Player %s not found" player)
-
-// let bonus (list: (string * int) list) tournament =
-//     let players =
-//         tournament.Players
-//         |> List.fold
-//             (fun acc player ->
-//                 acc
-//                 @ match List.tryFind (fun res -> player.Name = fst res) list with
-//                   | Some res -> [ { player with BonusScore = snd res } ]
-//                   | None -> [ player ])
-//             []
-
-//     Ok { tournament with Players = players }

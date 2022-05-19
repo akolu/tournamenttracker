@@ -30,11 +30,6 @@ $table_border: 1px solid gainsboro;
         & > div:first-child {
             border-bottom: $table_border;
         }
-
-        & > div:not(:first-child):hover {
-            cursor: pointer;
-            background-color: aliceblue;
-        }
         
         & > div:not(:first-child) {
             border-right: $table_border;
@@ -69,11 +64,19 @@ $table_border: 1px solid gainsboro;
     }
 }
 
-.Results__root--editable > div.Standings__root > div:not(:first-child) > span:last-child > aside {
-    background-color: rgba($color: gold, $alpha: 0.1);
-    border-left: $table_border;
+.Results__root--unconfirmed > div.Standings__root {
+    & > div:not(:first-child):hover {
+        cursor: pointer;
+        background-color: aliceblue;
+    }
+    
+    & > div:not(:first-child) > span:last-child > aside {
+        background-color: rgba($color: gold, $alpha: 0.1);
+        border-left: $table_border;
+    }
 }
 
-.Results__root:not(.Results__root--editable) > div.Standings__root > div:not(:first-child) > span:last-child > :not(aside) {
+
+.Results__root--confirmed > div.Standings__root > div:not(:first-child) > span:last-child > :not(aside) {
     background-color: rgba($color: palegreen, $alpha: 0.1);
 }

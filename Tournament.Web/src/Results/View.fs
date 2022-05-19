@@ -12,19 +12,14 @@ Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 [<ReactComponent>]
 let Results (state, dispatch) =
 
-    let mutable p1Ref = React.useRef<Browser.Types.Element> (null)
+    let mutable ref = React.useRef<Browser.Types.Element> (null)
 
     React.useEffect (
         (fun _ ->
             if (state.Form.IsSome) then
-                (unbox<HTMLInputElement> p1Ref.current).select ()),
+                (unbox<HTMLInputElement> ref.current).select ()),
         [| box (fst (state.Form |> Option.defaultWith (fun () -> "", 0))) |]
     )
-
-    let getBonus player =
-        match List.tryFind (fun (p, _) -> p = player) state.Bonus with
-        | Some (_, s) -> s
-        | None -> 0
 
     let renderBonus player =
         match state.Form with
@@ -33,35 +28,39 @@ let Results (state, dispatch) =
                 [ prop.type' "number"
                   prop.onKeyDown (fun e ->
                       match e.key with
-                      | "Enter" -> dispatch (ConfirmBonus(p, s))
+                      | "Enter" -> dispatch (ConfirmBonus(p, (unbox<HTMLInputElement> ref.current).value |> int))
                       | "Escape" -> dispatch (Edit None)
                       | _ -> ())
                   prop.onChange (fun (num: int) -> dispatch (Edit(Some(p, num))))
                   prop.inputMode.numeric
                   prop.pattern (System.Text.RegularExpressions.Regex "[0-9]*")
-                  prop.ref (fun node -> p1Ref.current <- node)
+                  prop.ref (fun node -> ref.current <- node)
                   input.isSmall
-                  prop.defaultValue s ]
+                  prop.defaultValue state.Bonus.[p] ]
             )
-        | _ -> Html.span (getBonus player)
+        | _ -> Html.span (state.Bonus.[player])
 
     Html.div [
         prop.classes [
             "Results__root"
-            if state.Form.IsSome then
-                "Results__root--editable"
+            match state.Status with
+            | Confirmed -> "Results__root--confirmed"
+            | _ -> "Results__root--unconfirmed"
         ]
         prop.children [
             Bulma.Divider.divider "Results"
             Components.Standings(
                 rounds = state.Rounds,
-                total = state.TotalScores,
-                onClick = (fun p -> dispatch (Edit(Some(p, (getBonus p))))),
+                total = state.Standings,
+                onClick =
+                    (fun p ->
+                        if state.Status <> Confirmed then
+                            dispatch (Edit(Some(p, (state.Bonus.[p]))))),
                 renderExtra = renderBonus
             )
             Html.span (
-                match state.Form with
-                | (Some (p, s)) ->
+                match (state.Status, state.Form) with
+                | (_, Some (p, s)) ->
                     [ Bulma.button.button [
                           button.isSmall
                           button.isRounded
@@ -81,7 +80,17 @@ let Results (state, dispatch) =
                           prop.onClick (fun _ -> dispatch (ConfirmBonus(p, s)))
                           prop.children [
                               Bulma.icon (Fa.i [ Fa.Solid.Check ] [])
-                              Html.b "Confirm"
+                              Html.b "Ok"
+                          ]
+                      ] ]
+                | Finished, None ->
+                    [ Bulma.button.button [
+                          button.isSmall
+                          button.isRounded
+                          prop.onClick (fun _ -> dispatch Verify)
+                          prop.children [
+                              Bulma.icon (Fa.i [ Fa.Solid.FlagCheckered ] [])
+                              Html.b "Tournament finished"
                           ]
                       ] ]
                 | _ -> []

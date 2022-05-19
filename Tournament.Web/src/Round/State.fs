@@ -19,10 +19,7 @@ type RoundMsg =
     | FinishRound
 
 let init num t =
-    { Round =
-        t.Rounds
-        |> List.tryFind (fun r -> r.Number = num)
-        |> Option.defaultWith (fun () -> Round.Empty)
+    { Round = List.find (fun r -> r.Number = num) t.Rounds
       Form = None
       StandingsAcc = t.Standings num }
 

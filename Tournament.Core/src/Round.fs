@@ -21,11 +21,6 @@ type Round =
         |> List.concat
         |> List.sortBy (fun (_, score) -> -score)
 
-    static member Empty =
-        { Number = 0
-          Pairings = []
-          Status = Pregame }
-
 let private pairsToPairings pairs =
     pairs
     |> List.mapi (fun i ((p1Name, _), (p2Name, _)) ->
