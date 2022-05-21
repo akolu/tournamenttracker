@@ -38,6 +38,7 @@ The repo consists of three projects:
 - feat: swap players
 - feat: add tooltips / snackbars & better error handling
 - feat: add timer for rounds
+- feat: prioritize game score in case of ties on results
 - refactor: use CSS mixins to reduce code duplication e.g. in tables (hover)
 - refactor: extract SASS variables to own file
 - refactor: extract Round button to component to reduce code duplication
