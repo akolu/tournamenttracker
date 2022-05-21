@@ -1,6 +1,6 @@
-# tournament-tracker
+# Tournament Tracker
 
-Next iteration of my yet-to-be-finished tournament tracker library, this time with Fable, which compiles the F# code to javascript.
+Next iteration of my yet-to-be-finished tournament tracker, this time with Fable, which compiles the F# code to javascript.
 
 The repo consists of three projects:
 
@@ -29,15 +29,16 @@ The repo consists of three projects:
 - feat: support player rating as a tiebreaker in Swiss pairings
 - feat: support secondary round score as a tiebreaker in Swiss pairings
 - refactor: return Result from PairingAlgorithm function for better error handling
+- refactor: use List.allPairs for PairingGenerator pairing matrix
+- refactor: use List.except or List.removeAt when popping last item from list (e.g. in PairingGenerator)
 
 ### Webapp
 
 - feat: use localstorage to persist tournament (& add possility to reset)
 - feat: swap players
-- feat: add "extra" points (from Settings screen) manually, include in results
 - feat: add tooltips / snackbars & better error handling
-- feat: prevent creating a tournament with more rounds than legal swiss pairings
 - feat: add timer for rounds
+- refactor: use CSS mixins to reduce code duplication e.g. in tables (hover)
 - refactor: extract SASS variables to own file
 - refactor: extract Round button to component to reduce code duplication
 - chore: verify CSS class names follow BEM naming conventions

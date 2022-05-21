@@ -8,7 +8,8 @@ open Components.IconButton
 
 Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 
-let Settings (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
+[<ReactComponent>]
+let Settings (state, dispatch) =
 
     Html.div [
         prop.className "Settings__div--root"
@@ -36,9 +37,9 @@ let Settings (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemoveRounds))
+                                            Components.IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemoveRounds))
                                             Html.div state.Rounds
-                                            IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddRounds))
+                                            Components.IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddRounds))
                                         ]
                                     ]
                                 ]
@@ -50,9 +51,9 @@ let Settings (state: SettingsModel) (dispatch: SettingsMsg -> unit) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemovePlayers))
+                                            Components.IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemovePlayers))
                                             Html.div state.Players.Length
-                                            IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddPlayers))
+                                            Components.IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddPlayers))
                                         ]
                                     ]
                                 ]

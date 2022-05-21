@@ -1,8 +1,6 @@
 module Settings.State
 
 open Elmish
-open Tournament.Utils
-open Tournament.Tournament
 
 type ValidationFunction =
     | Players
@@ -24,9 +22,8 @@ type SettingsMsg =
 
 let init rounds players =
     { Rounds = rounds
-      Players = players |> List.map (fun p -> (p, 0))
-      ValidationErrors = Map.empty },
-    Cmd.none
+      Players = players
+      ValidationErrors = Map.empty }
 
 let private uniqueSwissPairingsPossible model =
     System.Console.WriteLine "validating pairings..."

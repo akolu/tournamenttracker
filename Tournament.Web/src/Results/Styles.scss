@@ -1,0 +1,82 @@
+$table_border: 1px solid gainsboro;
+
+.Results__root {
+    width: 100%;
+
+    & > .Results__table {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+    }
+
+    & .Standings__root {
+        & > div {
+            grid-template-columns: minmax(0, 20%) repeat(auto-fit, minmax(60px, 1fr) minmax(10%, 1fr));
+
+            & > span:first-child > b::before {
+                content: '#';
+                display: inline-block;
+                width: 30px;
+                padding-left: 5px;
+            }
+
+            & > span[data-ordinal]::before {
+                content: attr(data-ordinal);
+                display: inline-block;
+                width: 30px;
+                padding-left: 5px;
+            }
+        }
+
+        & > div:first-child {
+            border-bottom: $table_border;
+        }
+        
+        & > div:not(:first-child) {
+            border-right: $table_border;
+            border-left: $table_border;
+
+            & > span:last-child {
+                & > aside {
+                    border-right: $table_border;
+
+                    & > input {
+                        flex: 1;
+                        max-width: 40px;
+                        text-align: center;
+                    }
+                }
+            }
+        }
+
+        & > div:last-child {
+            border-bottom: $table_border;
+        }
+
+        & > div > span:last-child > aside {
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    & > span > button {
+        margin-top: .9rem;
+        margin-right: .5rem;
+    }
+}
+
+.Results__root--unconfirmed > div.Standings__root {
+    & > div:not(:first-child):hover {
+        cursor: pointer;
+        background-color: aliceblue;
+    }
+    
+    & > div:not(:first-child) > span:last-child > aside {
+        background-color: rgba($color: gold, $alpha: 0.1);
+        border-left: $table_border;
+    }
+}
+
+
+.Results__root--confirmed > div.Standings__root > div:not(:first-child) > span:last-child > :not(aside) {
+    background-color: rgba($color: palegreen, $alpha: 0.1);
+}

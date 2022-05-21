@@ -11,10 +11,10 @@ Fable.Core.JsInterop.importSideEffects "./App.scss"
 
 let view (state: State) (dispatch: Action -> unit) =
     Html.div [
-        React.contextProvider (tournamentContext, (state, dispatch), [ TournamentContainer() ])
+        React.contextProvider (tournamentContext, (state, dispatch), [ Components.TournamentContainer() ])
     ]
 
 Program.mkProgram state update view
 |> Program.withReactSynchronous "elmish-app"
-// |> Program.withConsoleTrace
+|> Program.withConsoleTrace
 |> Program.run

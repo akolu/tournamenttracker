@@ -1,11 +1,16 @@
 module TournamentTracker
 
 open Tournament.Tournament
+open Tournament.Player
 open Tournament.PairingGenerator
 open Tournament.Utils
-open Fable.Core.JsInterop
 
 // DTOs are anonymous records so that they get compiled into plain javascript objects instead of class instances
+type PlayerDTO =
+    {| name: string
+       rating: int
+       bonusScore: int |}
+
 type PairingDTO =
     {| number: int
        player1: string
@@ -19,8 +24,20 @@ type RoundDTO =
        status: string |}
 
 type TournamentDTO =
-    {| players: string []
+    {| players: PlayerDTO []
        rounds: RoundDTO [] |}
+
+let private ParsePlayer (p: obj) : Tournament.Player.Player =
+    p :?> PlayerDTO
+    |> (fun p ->
+        { Name = p.name
+          Rating = p.rating
+          BonusScore = p.bonusScore })
+
+let private SerializePlayer (p: Tournament.Player.Player) =
+    {| name = p.Name
+       rating = p.Rating
+       bonusScore = p.BonusScore |}
 
 let private SerializePairing (p: Tournament.Pairing.Pairing) =
     {| number = p.Number
@@ -58,13 +75,13 @@ let private ParseRound (r: obj) : Tournament.Round.Round =
           Status = ParseStatus r.status })
 
 let private SerializeTournament (t: Tournament) =
-    {| players = List.toArray t.Players
+    {| players = List.toArray (List.map SerializePlayer t.Players)
        rounds = List.toArray (List.map SerializeRound t.Rounds) |}
 
 let private ParseTournament (t: obj) =
     t :?> TournamentDTO
     |> (fun t ->
-        { Players = Array.toList t.players
+        { Players = List.map ParsePlayer (Array.toList t.players)
           Rounds = List.map ParseRound (Array.toList t.rounds) })
 
 let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) (tournament: obj) =
@@ -75,12 +92,12 @@ let private wrapSerialize (fn: Tournament -> Result<Tournament, string>) (tourna
     |> SerializeTournament
 
 let createTournament rounds =
-    createTournament rounds
+    Tournament.Create rounds
     |> unwrap
     |> SerializeTournament
 
 let addPlayers players tournament =
-    wrapSerialize (addPlayers (players |> Array.toList)) tournament
+    wrapSerialize (addPlayers (List.map ParsePlayer (Array.toList players))) tournament
 
 let private parseAlg alg =
     match alg with

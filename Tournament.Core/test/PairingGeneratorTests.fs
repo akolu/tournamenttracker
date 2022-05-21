@@ -1,6 +1,5 @@
 ﻿module PairingGeneratorTests
 
-open System
 open Tournament.PairingGenerator
 open NUnit.Framework
 
