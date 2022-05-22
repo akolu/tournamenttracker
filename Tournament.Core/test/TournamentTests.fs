@@ -58,6 +58,39 @@ type TestClass() =
         Assert.AreEqual(expected, tournament.Rounds)
 
     [<Test>]
+    [<Category("Tournament.Create")>]
+    member this.``tournament can be created with initial player list``() =
+        let tournament =
+            Tournament.Create(1, [ "Alice"; "Bob"; "Michael"; "James" ])
+            |> unwrap
+
+        Assert.AreEqual(
+            [ Player.From "Alice"
+              Player.From "Bob"
+              Player.From "Michael"
+              Player.From "James" ],
+            tournament.Players
+        )
+
+    [<Test>]
+    [<Category("Tournament.Create")>]
+    member this.``tournament cannot be created from inital player list if there are duplicate players in list``() =
+        let tournament = Tournament.Create(1, [ "Alice"; "Alice" ])
+
+        match tournament with
+        | Ok _ -> failwith "Should not be possible to add duplicate players"
+        | Error err -> Assert.AreEqual("All player names must be unique", err)
+
+    [<Test>]
+    [<Category("Tournament.Create")>]
+    member this.``tournament cannot be created from inital player list if there is empty player name in list``() =
+        let tournament = Tournament.Create(1, [ "Alice"; "" ])
+
+        match tournament with
+        | Ok _ -> failwith "Should not be possible to add duplicate players"
+        | Error err -> Assert.AreEqual("Empty name is not allowed", err)
+
+    [<Test>]
     [<Category("addPlayers")>]
     member this.``players can be added one at a time``() =
         let tournament =
@@ -114,6 +147,17 @@ type TestClass() =
             |> unwrap
 
         CollectionAssert.AreEqual([ "Alice"; "Bob" ], names tournament.Players)
+
+    [<Test>]
+    [<Category("addPlayers")>]
+    member this.``players with empty name cannot be added``() =
+        let tournament =
+            Tournament.Create 1
+            >>= addPlayers [ Player.From "" ]
+
+        match tournament with
+        | Ok _ -> failwith "Should not be possible to add players with empty name"
+        | Error err -> Assert.AreEqual("Players with empty name are not allowed", err)
 
     [<Test>]
     [<Category("startRound")>]

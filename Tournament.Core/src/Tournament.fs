@@ -50,18 +50,22 @@ type Tournament =
 
     member this.Finished = Seq.forall (fun r -> r.Status = Finished) this.Rounds
 
-    static member Create(rounds, players) =
+    static member Create(rounds, players: string list) =
         let defaultRound index =
             { Number = (+) index 1
               Pairings = []
               Status = Pregame }
 
-        match rounds with
-        | n when n > 0 ->
+        if rounds = 0 then
+            Error "Tournament should have at least one round"
+        elif players.Length <> (Set.ofList players).Count then
+            Error "All player names must be unique"
+        elif players |> List.exists (fun p -> p.Trim() = "") then
+            Error "Empty name is not allowed"
+        else
             Ok
                 { Rounds = (List.init rounds defaultRound)
                   Players = players |> List.map (fun p -> Player.From p) }
-        | _ -> Error "Tournament should have at least one round"
 
     static member Create rounds = Tournament.Create(rounds, [])
 
@@ -71,6 +75,9 @@ type Tournament =
 let rec addPlayers (players: Player list) (tournament: Tournament) =
     if players.IsEmpty then
         Ok tournament
+    elif players
+         |> List.exists (fun p -> p.Name.Trim() = "") then
+        Error "Players with empty name are not allowed"
     else
         match Seq.tryFind (fun player -> List.exists (fun p -> p.Name = player.Name) tournament.Players) players with
         | Some duplicate -> Error(sprintf "Player %s already exists" duplicate.Name)
