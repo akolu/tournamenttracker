@@ -10,9 +10,9 @@
     <PackageReference Include="Feliz" Version="1.62.0" />
     <PackageReference Include="Feliz.Bulma" Version="2.18.0" />
     <PackageReference Include="Feliz.Bulma.Divider" Version="2.0.0" />
+    <PackageReference Include="Thoth.Json" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TournamentTracker.fs" />
     <Compile Include="Components/IconButton/IconButton.fs" />
     <Compile Include="Components/Standings/Standings.fs" />
     <Compile Include="Components/Tabs/Tabs.fs" />
@@ -22,9 +22,8 @@
     <Compile Include="Settings/View.fs" />
     <Compile Include="Round/State.fs" />
     <Compile Include="Round/View.fs" />
-    <Compile Include="State.fs" />
-    <Compile Include="Context.fs" />
-    <Compile Include="Components/TournamentContainer/TournamentContainer.fs" />
+    <Compile Include="Tournament/State.fs" />
+    <Compile Include="Tournament/View.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
