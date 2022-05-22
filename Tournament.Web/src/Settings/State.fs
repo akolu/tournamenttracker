@@ -2,12 +2,18 @@ module Settings.State
 
 open Elmish
 
+type Status =
+    | New
+    | Unsaved
+    | Saved
+
 type ValidationFunction =
     | Players
     | Rounds
 
 type SettingsModel =
-    { Rounds: int
+    { Status: Status
+      Rounds: int
       Players: (string * int) list
       ValidationErrors: Map<ValidationFunction, string> }
 
@@ -21,13 +27,12 @@ type SettingsMsg =
     | Validate of ValidationFunction
 
 let init rounds players =
-    { Rounds = rounds
+    { Status = New
+      Rounds = rounds
       Players = players
       ValidationErrors = Map.empty }
 
 let private uniqueSwissPairingsPossible model =
-    System.Console.WriteLine "validating pairings..."
-
     if (model.Rounds
         >= (((model.Players.Length |> float) / 2.0)
             |> System.Math.Ceiling
@@ -38,8 +43,6 @@ let private uniqueSwissPairingsPossible model =
         Ok model
 
 let private allPlayersNamedWithUniqueNames model =
-    System.Console.WriteLine "validating players..."
-
     if ((model.Players
          |> List.map (fun p -> fst p)
          |> List.filter (fun p -> p.Trim() <> "")

@@ -4,6 +4,8 @@ open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
 open Elmish
+open Thoth.Json
+open Browser.WebStorage
 
 type PageModels =
     { Settings: Settings.State.SettingsModel
@@ -31,24 +33,26 @@ let getPageModels settings (t: Tournament) =
             |> List.map (fun r -> r.Number, Round.State.init r.Number t)
         ) }
 
-let updateStateModels state t =
+let persist (state: State) =
+    localStorage.setItem ("tournament", Encode.Auto.toString (0, state))
+
+let updateStateModels state (t: Tournament) =
+    persist state
+
     { state with
         Tournament = t
         PageModels = getPageModels state.PageModels.Settings t }
 
 let state () =
-    let settings =
-        Settings.State.init
-            3
-            [ "Aku Ankka", 0
-              "Mikki Hiiri", 0
-              "Hessu Hopo", 0
-              "Pelle Peloton", 0 ]
+    let model =
+        match Decode.Auto.fromString<State> (localStorage.getItem "tournament") with
+        | Ok state -> state
+        | Error _ ->
+            { Tournament = Tournament.Empty
+              PageModels = getPageModels (Settings.State.init 0 []) Tournament.Empty
+              CurrentTab = 0 }
 
-    { Tournament = Tournament.Empty
-      PageModels = getPageModels settings Tournament.Empty
-      CurrentTab = 0 },
-    Cmd.none
+    model, Cmd.none
 
 let createTournament (settings: Settings.State.SettingsModel) state =
     Tournament.Create(settings.Rounds, (settings.Players |> List.map (fun p -> fst p)))
