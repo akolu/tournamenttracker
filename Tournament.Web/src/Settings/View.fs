@@ -27,6 +27,7 @@ let Settings (state, dispatch) =
                                         input.isRounded
                                         input.isSmall
                                         prop.defaultValue "Tournament name"
+                                        prop.disabled (not state.Editable)
                                     ]
                                 ]
                             ]
@@ -37,9 +38,17 @@ let Settings (state, dispatch) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            Components.IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemoveRounds))
+                                            Components.IconButton(
+                                                Fa.Solid.Minus,
+                                                [ prop.onClick (fun _ -> dispatch RemoveRounds)
+                                                  prop.disabled (not state.Editable) ]
+                                            )
                                             Html.div state.Rounds
-                                            Components.IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddRounds))
+                                            Components.IconButton(
+                                                Fa.Solid.Plus,
+                                                [ prop.onClick (fun _ -> dispatch AddRounds)
+                                                  prop.disabled (not state.Editable) ]
+                                            )
                                         ]
                                     ]
                                 ]
@@ -51,22 +60,19 @@ let Settings (state, dispatch) =
                                     Html.div [
                                         prop.className "Settings__NumberSelector--wrapper"
                                         prop.children [
-                                            Components.IconButton(Fa.Solid.Minus, (fun _ -> dispatch RemovePlayers))
+                                            Components.IconButton(
+                                                Fa.Solid.Minus,
+                                                [ prop.onClick (fun _ -> dispatch RemovePlayers)
+                                                  prop.disabled (not state.Editable) ]
+                                            )
                                             Html.div state.Players.Length
-                                            Components.IconButton(Fa.Solid.Plus, (fun _ -> dispatch AddPlayers))
+                                            Components.IconButton(
+                                                Fa.Solid.Plus,
+                                                [ prop.onClick (fun _ -> dispatch AddPlayers)
+                                                  prop.disabled (not state.Editable) ]
+                                            )
                                         ]
                                     ]
-                                ]
-                            ]
-                            Bulma.button.button [
-                                button.isSmall
-                                button.isRounded
-                                prop.onClick (fun _ -> dispatch Confirm)
-                                prop.disabled (state.ValidationErrors.Count > 0)
-                                prop.className "Settings__button--save"
-                                prop.children [
-                                    Bulma.icon (Fa.i [ Fa.Solid.Save ] [])
-                                    Html.b "Save"
                                 ]
                             ]
                         ]
@@ -85,7 +91,8 @@ let Settings (state, dispatch) =
                                                 input.isSmall
                                                 prop.onChange (fun (ev: string) -> dispatch (EditPlayerName(i, ev)))
                                                 prop.placeholder "Player name"
-                                                prop.defaultValue (fst p)
+                                                prop.value (fst p)
+                                                prop.disabled (not state.Editable)
                                             ]
                                             // Bulma.input.text [
                                             //     input.isRounded
@@ -105,5 +112,32 @@ let Settings (state, dispatch) =
                     // ]
                     ]
             ]
+            match state.Editable with
+            | true ->
+                Bulma.button.button [
+                    button.isSmall
+                    button.isRounded
+                    prop.onClick (fun _ -> dispatch Confirm)
+                    prop.disabled (state.ValidationErrors.Count > 0)
+                    prop.classes [ "Settings__button" ]
+                    prop.children [
+                        Bulma.icon (Fa.i [ Fa.Solid.Plus ] [])
+                        Html.b "Create"
+                    ]
+                ]
+            | false ->
+                Bulma.button.button [
+                    button.isSmall
+                    button.isRounded
+                    prop.onClick (fun _ ->
+                        if (Browser.Dom.window.confirm "Reset tournament? This action cannot be reverted" = true) then
+                            dispatch Reset)
+                    prop.disabled (state.ValidationErrors.Count > 0)
+                    prop.classes [ "Settings__button" ]
+                    prop.children [
+                        Bulma.icon (Fa.i [ Fa.Solid.TrashAlt ] [])
+                        Html.b "Reset"
+                    ]
+                ]
         ]
     ]

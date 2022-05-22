@@ -1,18 +1,14 @@
 module Settings.State
 
 open Elmish
-
-type Status =
-    | New
-    | Unsaved
-    | Saved
+open Tournament.Tournament
 
 type ValidationFunction =
     | Players
     | Rounds
 
 type SettingsModel =
-    { Status: Status
+    { Editable: bool
       Rounds: int
       Players: (string * int) list
       ValidationErrors: Map<ValidationFunction, string> }
@@ -25,12 +21,23 @@ type SettingsMsg =
     | EditPlayerName of (int * string)
     | Confirm
     | Validate of ValidationFunction
+    | Reset
 
-let init rounds players =
-    { Status = New
-      Rounds = rounds
-      Players = players
-      ValidationErrors = Map.empty }
+let private getPlayers (t: Tournament) =
+    if List.isEmpty t.Players then
+        [ ("", 0); ("", 0) ]
+    else
+        t.Players |> List.map (fun p -> p.Name, p.Rating)
+
+let init (t: Tournament) =
+    { Editable = t = Tournament.Empty
+      Rounds = max 1 t.Rounds.Length
+      Players = getPlayers t
+      ValidationErrors = Map.empty },
+    Cmd.batch [
+        Cmd.ofMsg (Validate Players)
+        Cmd.ofMsg (Validate Rounds)
+    ]
 
 let private uniqueSwissPairingsPossible model =
     if (model.Rounds
@@ -95,3 +102,4 @@ let update msg model =
         Cmd.ofMsg (Validate Players)
     | Confirm -> model, Cmd.none
     | Validate fn -> model |> getValidationErrors fn, Cmd.none
+    | _ -> model, Cmd.none // reset handled by parent update fn
