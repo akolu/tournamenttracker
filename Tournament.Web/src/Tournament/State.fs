@@ -1,23 +1,21 @@
-module State
+module Tournament.State
 
+open Elmish
 open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
-open Elmish
-open Thoth.Json
-open Browser.WebStorage
 
 type PageModels =
     { Settings: Settings.State.SettingsModel
       Rounds: Map<int, Round.State.RoundModel>
       Results: Results.State.ResultsModel }
 
-type State =
+type TournamentModel =
     { Tournament: Tournament
       PageModels: PageModels
       CurrentTab: int }
 
-type Action =
+type TournamentMsg =
     | Score of {| nr: int; result: int * int |}
     | SetActivePage of int
     | SettingsMsg of Settings.State.SettingsMsg
@@ -33,26 +31,16 @@ let getPageModels settings (t: Tournament) =
             |> List.map (fun r -> r.Number, Round.State.init r.Number t)
         ) }
 
-let persist (state: State) =
-    localStorage.setItem ("tournament", Encode.Auto.toString (0, state))
-
 let updateStateModels state (t: Tournament) =
-    persist state
-
     { state with
         Tournament = t
         PageModels = getPageModels state.PageModels.Settings t }
 
-let state () =
-    let model =
-        match Decode.Auto.fromString<State> (localStorage.getItem "tournament") with
-        | Ok state -> state
-        | Error _ ->
-            { Tournament = Tournament.Empty
-              PageModels = getPageModels (Settings.State.init 0 []) Tournament.Empty
-              CurrentTab = 0 }
-
-    model, Cmd.none
+let init () =
+    { Tournament = Tournament.Empty
+      PageModels = getPageModels (Settings.State.init 0 []) Tournament.Empty
+      CurrentTab = 0 },
+    Cmd.none
 
 let createTournament (settings: Settings.State.SettingsModel) state =
     Tournament.Create(settings.Rounds, (settings.Players |> List.map (fun p -> fst p)))
@@ -83,7 +71,7 @@ let replaceRound msg state =
         Cmd.map RoundMsg cmd
     | None -> state, Cmd.none
 
-let update (msg: Action) (state: State) =
+let update msg state =
     match msg with
     | Score p -> { state with Tournament = state.Tournament |> score p.nr p.result |> unwrap }, Cmd.none
     | SetActivePage tab -> { state with CurrentTab = tab }, Cmd.ofMsg (RoundMsg(Round.State.RoundMsg.Edit None))
