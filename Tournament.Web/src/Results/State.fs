@@ -5,54 +5,46 @@ open Tournament.Round
 open Tournament.Tournament
 open Tournament.Player
 
-type Status =
-    | Ongoing
-    | Finished
-    | Confirmed
-
 type ResultsModel =
-    { Status: Status
-      Rounds: Round list
+    { Editable: string option
+      Tournament: Tournament
       Bonus: Map<string, int>
-      Standings: (string * int) list
-      Form: (string * int) option }
+      Standings: (string * int) list }
 
 type ResultsMsg =
-    | Edit of (string * int) option
-    | SetBonus of int
-    | ConfirmBonus of (string * int)
-    | Verify
+    | Edit of string
+    | CancelEditing
+    | SetBonus of (string * int)
+    | ConfirmBonus
 
-let private getTotalScore (model) =
-    model.Standings
-    |> List.map (fun (p, s) -> (p, s + model.Bonus.[p]))
+let private getTotalScore (t: Tournament) =
+    t.Standings()
+    |> List.filter (fun (name, _) -> List.exists (fun p -> p.Name = name) t.Players)
+    |> List.map (fun res ->
+        match List.tryFind (fun p -> p.Name = fst res) t.Players with
+        | Some p -> (fst res, snd res + p.BonusScore)
+        | None -> res)
     |> List.sortBy (fun (_, score) -> -score)
 
 let init (t: Tournament) =
-    { Status = if t.Finished then Finished else Ongoing
-      Rounds = t.Rounds
-      Bonus = Map.ofList (t.Players |> List.map (fun p -> p.Name, 0))
-      Standings = t.Standings()
-      Form = None }
-
-let nextEditable player list =
-    match list
-          |> List.findIndex (fun p -> ((=) (fst p) player))
-        with
-    | i when i <> (list.Length - 1) -> Some list.[i + 1]
-    | _ -> None
+    { Editable = None
+      Tournament = t
+      Bonus =
+        t.Players
+        |> List.map (fun p -> p.Name, p.BonusScore)
+        |> Map.ofList
+      Standings = getTotalScore t }
 
 let update msg model =
     match msg with
-    | Edit p -> { model with Form = p }, Cmd.none
-    | SetBonus num -> { model with Form = Some((fst model.Form.Value), num) }, Cmd.none
-    | ConfirmBonus (p, s) ->
+    | Edit player -> { model with Editable = Some player }, Cmd.none
+    | CancelEditing ->
         { model with
-            Form = nextEditable p model.Standings
-            Bonus = model.Bonus |> Map.add p s },
+            Editable = None
+            Bonus =
+                model.Tournament.Players
+                |> List.map (fun p -> p.Name, p.BonusScore)
+                |> Map.ofList },
         Cmd.none
-    | Verify ->
-        { model with
-            Status = Confirmed
-            Standings = getTotalScore model },
-        Cmd.none
+    | SetBonus (p, s) -> { model with Bonus = model.Bonus |> Map.add p s }, Cmd.none
+    | ConfirmBonus -> model, Cmd.none

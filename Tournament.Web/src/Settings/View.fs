@@ -132,7 +132,6 @@ let Settings (state, dispatch) =
                     prop.onClick (fun _ ->
                         if (Browser.Dom.window.confirm "Reset tournament? This action cannot be reverted" = true) then
                             dispatch Reset)
-                    prop.disabled (state.ValidationErrors.Count > 0)
                     prop.classes [ "Settings__button" ]
                     prop.children [
                         Bulma.icon (Fa.i [ Fa.Solid.TrashAlt ] [])
