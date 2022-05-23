@@ -65,7 +65,19 @@ let Results (state, dispatch) =
                     [ Bulma.button.button [
                           button.isSmall
                           button.isRounded
-                          prop.hidden true
+                          prop.onClick (fun _ -> dispatch CancelEditing)
+                          prop.children [
+                              Bulma.icon (
+                                  Html.i [
+                                      prop.classes [ "fa-solid"; "fa-xmark" ]
+                                  ]
+                              )
+                              Html.b "Cancel"
+                          ]
+                      ]
+                      Bulma.button.button [
+                          button.isSmall
+                          button.isRounded
                           prop.onClick (fun _ -> dispatch ConfirmBonus)
                           prop.children [
                               Bulma.icon (Fa.i [ Fa.Solid.Check ] [])
@@ -76,7 +88,6 @@ let Results (state, dispatch) =
                     [ Bulma.button.button [
                           button.isSmall
                           button.isRounded
-                          prop.hidden true
                           prop.onClick (fun _ -> dispatch (Edit(fst state.Standings.Head)))
                           prop.children [
                               Bulma.icon (
