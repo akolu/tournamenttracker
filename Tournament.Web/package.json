@@ -11,9 +11,9 @@
   ],
   "scripts": {
     "postinstall": "dotnet tool restore",
-    "start": "dotnet fable watch src -o src/build --run webpack serve",
+    "start": "dotnet fable watch src -o src/build --run webpack serve --config webpack.dev.js",
     "clean": "rimraf dist && rimraf src/build",
-    "build": "dotnet fable src -o src/build && webpack && copyfiles -u 1 public/* dist",
+    "build": "dotnet fable src -o src/build && webpack --config webpack.prod.js && copyfiles -u 1 public/* dist",
     "test": "dotnet fable test -o test/build --run jest"
   },
   "babel": {
@@ -48,6 +48,7 @@
     "copyfiles": "^2.4.1",
     "css-loader": "^6.7.1",
     "jest": "^27.5.1",
+    "mini-css-extract-plugin": "^2.6.0",
     "rimraf": "^3.0.2",
     "sass": "^1.50.1",
     "sass-loader": "^12.6.0",

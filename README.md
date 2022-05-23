@@ -22,7 +22,8 @@ The repo consists of the following projects:
 
 ### General
 
-- Add Dockerfiles to projects and make the application(s) running in containers
+- Add Dockerfiles to projects and make the application run in a container
+- Add CI (Github Actions) to run tests & deploy automatically
 
 ### Core lib
 
@@ -43,3 +44,4 @@ The repo consists of the following projects:
 - refactor: extract SASS variables to own file
 - refactor: extract Round button to component to reduce code duplication
 - chore: verify CSS class names follow BEM naming conventions
+- chore: webpack bundle size optimization
