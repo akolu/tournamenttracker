@@ -495,6 +495,26 @@ type TestClass() =
         | Error err -> Assert.AreEqual("Can't swap players: round already started!", err)
 
     [<Test>]
+    [<Category("bonus")>]
+    member this.``bonus returns Error if player cannot be found``() =
+        match
+            Tournament.Create(1, [ "Alice"; "Bob" ])
+            >>= bonus ("Hastur", 5)
+            with
+        | Ok _ -> failwith "Trying to add bonus to nonexistent player should return Error"
+        | Error err -> Assert.AreEqual("Player Hastur not found", err)
+
+    [<Test>]
+    [<Category("bonus")>]
+    member this.``bonus sets bonus score for a player``() =
+        let tournament =
+            Tournament.Create(1, [ "Alice"; "Bob" ])
+            >>= bonus ("Alice", 5)
+            |> unwrap
+
+        Assert.AreEqual(tournament.Players.[0].BonusScore, 5)
+
+    [<Test>]
     member this.``tournament can be run successfully from start to finish ensuring unique pairings each round``() =
         // ROUND 1 PAIRINGS
         let round1 =

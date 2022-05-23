@@ -102,3 +102,8 @@ let score number result (tournament: Tournament) =
 
 let swap player1 player2 (tournament: Tournament) =
     tournament.ModifyCurrentRound(swapPlayers player1 player2)
+
+let bonus (player, score) tournament =
+    match List.tryFind (fun p -> p.Name = player) tournament.Players with
+    | Some p -> Ok { tournament with Players = (replace ((=) p) { p with BonusScore = score }) tournament.Players }
+    | None -> Error(sprintf "Player %s not found" player)

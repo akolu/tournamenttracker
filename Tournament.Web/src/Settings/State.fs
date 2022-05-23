@@ -29,16 +29,6 @@ let private getPlayers (t: Tournament) =
     else
         t.Players |> List.map (fun p -> p.Name, p.Rating)
 
-let init (t: Tournament) =
-    { Editable = t = Tournament.Empty
-      Rounds = max 1 t.Rounds.Length
-      Players = getPlayers t
-      ValidationErrors = Map.empty },
-    Cmd.batch [
-        Cmd.ofMsg (Validate Players)
-        Cmd.ofMsg (Validate Rounds)
-    ]
-
 let private uniqueSwissPairingsPossible model =
     if (model.Rounds
         >= (((model.Players.Length |> float) / 2.0)
@@ -69,6 +59,13 @@ let private getValidationErrors fn model =
     match validate fn model with
     | Ok model -> { model with ValidationErrors = model.ValidationErrors |> Map.remove fn }
     | Error err -> { model with ValidationErrors = model.ValidationErrors |> Map.add fn err }
+
+let init (t: Tournament) =
+    { Editable = ((=) t Tournament.Empty)
+      Rounds = max 1 t.Rounds.Length
+      Players = getPlayers t
+      ValidationErrors = Map.empty }
+    |> getValidationErrors Players
 
 let update msg model =
     match msg with

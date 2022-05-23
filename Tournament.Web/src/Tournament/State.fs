@@ -23,7 +23,7 @@ type TournamentMsg =
     | ResultsMsg of Results.State.ResultsMsg
 
 let getPageModels (t: Tournament) =
-    { Settings = fst (Settings.State.init t)
+    { Settings = Settings.State.init t
       Results = Results.State.init t
       Rounds =
         Map.ofList (
@@ -38,9 +38,11 @@ let updateStateModels state (t: Tournament) =
 
 let init () =
     { Tournament = Tournament.Empty
-      PageModels = getPageModels Tournament.Empty
-      CurrentTab = 0 },
-    Cmd.map SettingsMsg (snd (Settings.State.init Tournament.Empty))
+      PageModels =
+        { Settings = Settings.State.init Tournament.Empty
+          Rounds = Map.empty
+          Results = Results.State.init Tournament.Empty }
+      CurrentTab = 0 }
 
 let createTournament (settings: Settings.State.SettingsModel) state =
     Tournament.Create(settings.Rounds, (settings.Players |> List.map (fun p -> fst p)))
@@ -85,7 +87,7 @@ let update msg state =
                 Cmd.map SettingsMsg cmd
                 Cmd.ofMsg (SetActivePage(state.CurrentTab + 1))
             ]
-        | Settings.State.Reset -> init ()
+        | Settings.State.Reset -> init (), Cmd.map SettingsMsg cmd
         | _ -> { state with PageModels = { state.PageModels with Settings = res } }, Cmd.map SettingsMsg cmd
     | RoundMsg msg' ->
         match msg' with
@@ -96,4 +98,13 @@ let update msg state =
         | _ -> replaceRound msg' state
     | ResultsMsg msg' ->
         let res, cmd = Results.State.update msg' state.PageModels.Results
-        { state with PageModels = { state.PageModels with Results = res } }, Cmd.map ResultsMsg cmd
+
+        match msg' with
+        | Results.State.ConfirmBonus ->
+            tournamentUpdated
+                (fun t ->
+                    (Ok t, state.PageModels.Results.Bonus)
+                    ||> Map.fold (fun acc p s -> acc >>= bonus (p, s)))
+                state,
+            Cmd.none
+        | _ -> { state with PageModels = { state.PageModels with Results = res } }, Cmd.map ResultsMsg cmd

@@ -21,7 +21,7 @@ let state () =
         | Ok t -> { Tournament = t }
         | Error _ ->
             localStorage.removeItem ("tournament")
-            { Tournament = fst (Tournament.State.init ()) }
+            { Tournament = Tournament.State.init () }
 
     model, Cmd.none
 
@@ -47,5 +47,5 @@ let view state dispatch =
 
 Program.mkProgram state update view
 |> Program.withReactSynchronous "elmish-app"
-|> Program.withConsoleTrace
+// |> Program.withConsoleTrace
 |> Program.run
