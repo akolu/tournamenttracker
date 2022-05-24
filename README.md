@@ -5,7 +5,7 @@ Next iteration of my yet-to-be-finished tournament tracker, this time with Fable
 The repo consists of the following projects:
 
 1. [Tournament.Core](./Tournament.Core/) is the core package for tournament tracking logic, written completely in F#.
-2. [Tournament.Web](./Tournament.Web/) is a [Fable](https://fable.io) web application that provides a UI for the core logic, written completely in #F.
+2. [Tournament.Web](./Tournament.Web/) is a [Fable](https://fable.io) web application that provides a UI for the core logic, written completely in #F. Webapp available [here](https://tournamenttracker-55dc5.web.app/).
 
 ## Requirements
 
