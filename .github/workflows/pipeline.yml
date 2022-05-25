@@ -1,17 +1,28 @@
 name: pipeline
 on: [push]
 jobs:
-  check-bats-version:
+  test-core:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js 18
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
     - name: Setup dotnet
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.x'
     - run: dotnet restore ./Tournament.Core/test
-    - run: dotnet test ./Tournament.Core/test
+    - run: dotnet test ./Tournament.Core/test --logger="console;verbosity=detailed"
+  test-webapp:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 14
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.x'
+    - run: dotnet tool restore --tool-manifest ./Tournament.Web/.config/dotnet-tools.json
+    - run: npm --prefix Tournament.Web ci
+    - run: npm --prefix Tournament.Web test
