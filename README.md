@@ -1,6 +1,8 @@
 # Tournament Tracker
 
-Next iteration of my yet-to-be-finished tournament tracker, this time with Fable, which compiles the F# code to javascript.
+![build](https://github.com/akolu/tournamenttracker/actions/workflows/pipeline.yml/badge.svg)
+
+Next iteration of my yet-to-be-finished tournament tracker, this time with Fable, which compiles the F# code to JavaScript.
 
 The repo consists of the following projects:
 
@@ -23,7 +25,6 @@ The repo consists of the following projects:
 ### General
 
 - Add Dockerfiles to projects and make the application run in a container
-- Add CI (Github Actions) to run tests & deploy automatically
 
 ### Core lib
 
