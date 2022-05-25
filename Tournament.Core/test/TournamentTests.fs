@@ -13,19 +13,23 @@ type TestClass() =
 
     let table number (p1, p2) =
         { Number = number
-          Player1 = p1
-          Player2 = p2
-          Player1Score = 0
-          Player2Score = 0 }
+          Player1 =
+            { Name = p1
+              PrimaryScore = 0
+              SecondaryScore = 0 }
+          Player2 =
+            { Name = p2
+              PrimaryScore = 0
+              SecondaryScore = 0 } }
 
     let result (p1Score, p2Score) pairing =
         { pairing with
-            Player1Score = p1Score
-            Player2Score = p2Score }
+            Player1 = { pairing.Player1 with PrimaryScore = p1Score }
+            Player2 = { pairing.Player2 with PrimaryScore = p2Score } }
 
     let pairings (tournament: Tournament) =
         tournament.Pairings
-        |> List.map (fun pairing -> (pairing.Player1, pairing.Player2))
+        |> List.map (fun pairing -> (pairing.Player1.Name, pairing.Player2.Name))
 
     let names players = players |> List.map (fun p -> p.Name)
 
@@ -265,10 +269,10 @@ type TestClass() =
             |> unwrap
 
         let pairings = tournament.Rounds.[0].Pairings
-        Assert.AreEqual("Alice", pairings.[0].Player1)
-        Assert.AreEqual("Bob", pairings.[0].Player2)
-        Assert.AreEqual("James", pairings.[1].Player1)
-        Assert.AreEqual("Michael", pairings.[1].Player2)
+        Assert.AreEqual("Alice", pairings.[0].Player1.Name)
+        Assert.AreEqual("Bob", pairings.[0].Player2.Name)
+        Assert.AreEqual("James", pairings.[1].Player1.Name)
+        Assert.AreEqual("Michael", pairings.[1].Player2.Name)
 
     [<Test>]
     [<Category("pair")>]
@@ -278,8 +282,8 @@ type TestClass() =
             >>= pair Swiss
             |> unwrap
 
-        Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)
-        Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2)
+        Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1.Name)
+        Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2.Name)
 
     [<Test>]
     [<Category("score")>]
@@ -298,8 +302,8 @@ type TestClass() =
 
         let round = tournament.Rounds.[0]
         Assert.AreEqual(unscored.[0].Pairings.[0], round.Pairings.[0])
-        Assert.AreEqual(13, round.Pairings.[1].Player1Score)
-        Assert.AreEqual(8, round.Pairings.[1].Player2Score)
+        Assert.AreEqual(13, round.Pairings.[1].Player1.PrimaryScore)
+        Assert.AreEqual(8, round.Pairings.[1].Player2.PrimaryScore)
 
     [<Test>]
     [<Category("score")>]
@@ -318,8 +322,20 @@ type TestClass() =
             |> unwrap
 
         Assert.AreEqual(unscored.[0], tournament.Rounds.[0])
-        Assert.AreEqual(15, tournament.Rounds.[1].Pairings.[0].Player1Score)
-        Assert.AreEqual(5, tournament.Rounds.[1].Pairings.[0].Player2Score)
+
+        Assert.AreEqual(
+            15,
+            tournament.Rounds.[1].Pairings.[0]
+                .Player1
+                .PrimaryScore
+        )
+
+        Assert.AreEqual(
+            5,
+            tournament.Rounds.[1].Pairings.[0]
+                .Player2
+                .PrimaryScore
+        )
 
     [<Test>]
     [<Category("score")>]
@@ -379,21 +395,37 @@ type TestClass() =
               Status = Finished
               Pairings =
                 [ { Number = 1
-                    Player1 = "Alice"
-                    Player2 = "Bob"
-                    Player1Score = 4
-                    Player2Score = 16 }
+                    Player1 =
+                      { Name = "Alice"
+                        PrimaryScore = 4
+                        SecondaryScore = 0 }
+                    Player2 =
+                      { Name = "Bob"
+                        PrimaryScore = 16
+                        SecondaryScore = 0 } }
                   { Number = 2
-                    Player1 = "James"
-                    Player2 = "Michael"
-                    Player1Score = 15
-                    Player2Score = 5 } ] }
+                    Player1 =
+                      { Name = "James"
+                        PrimaryScore = 15
+                        SecondaryScore = 0 }
+                    Player2 =
+                      { Name = "Michael"
+                        PrimaryScore = 5
+                        SecondaryScore = 0 } } ] }
 
         CollectionAssert.AreEqual(
-            [ ("Bob", 16)
-              ("James", 15)
-              ("Michael", 5)
-              ("Alice", 4) ],
+            [ { Name = "Bob"
+                PrimaryScore = 16
+                SecondaryScore = 0 }
+              { Name = "James"
+                PrimaryScore = 15
+                SecondaryScore = 0 }
+              { Name = "Michael"
+                PrimaryScore = 5
+                SecondaryScore = 0 }
+              { Name = "Alice"
+                PrimaryScore = 4
+                SecondaryScore = 0 } ],
             round.Standings
         )
 

@@ -15,20 +15,22 @@ type Round =
       Status: RoundStatus }
     member this.Standings =
         this.Pairings
-        |> List.map (fun p ->
-            [ (p.Player1, p.Player1Score)
-              (p.Player2, p.Player2Score) ])
+        |> List.map (fun p -> [ p.Player1; p.Player2 ])
         |> List.concat
-        |> List.sortBy (fun (_, score) -> -score)
+        |> List.sortBy (fun p -> -p.PrimaryScore)
 
 let private pairsToPairings pairs =
     pairs
     |> List.mapi (fun i ((p1Name, _), (p2Name, _)) ->
         { Number = (+) i 1
-          Player1 = p1Name
-          Player2 = p2Name
-          Player1Score = 0
-          Player2Score = 0 })
+          Player1 =
+            { Name = p1Name
+              PrimaryScore = 0
+              SecondaryScore = 0 }
+          Player2 =
+            { Name = p2Name
+              PrimaryScore = 0
+              SecondaryScore = 0 } })
 
 // TODO: change fn to return Result
 let internal createPairings fn (standings: List<string * int>) round =
@@ -44,12 +46,12 @@ let internal createPairings fn (standings: List<string * int>) round =
 
 let private validatePlayerSwap player round =
     let exists player pairing =
-        ((=) player pairing.Player1)
-        || ((=) player pairing.Player2)
+        ((=) player pairing.Player1.Name)
+        || ((=) player pairing.Player2.Name)
 
     match List.tryFind (exists player) round.Pairings with
-    | Some p when p.Player1 = player -> Ok p.Player1
-    | Some p when p.Player2 = player -> Ok p.Player2
+    | Some p when p.Player1.Name = player -> Ok p.Player1
+    | Some p when p.Player2.Name = player -> Ok p.Player2
     | _ -> Error(sprintf "Player %s not found" player)
 
 let internal swapPlayers player1 player2 round =
