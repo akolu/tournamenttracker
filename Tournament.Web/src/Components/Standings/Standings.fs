@@ -13,7 +13,7 @@ type Components() =
             match round.Standings
                   |> List.tryFind (fun p -> (=) player (fst p))
                 with
-            | Some s -> snd s
+            | Some s -> (snd s).Primary
             | None -> 0
 
         Html.div [
