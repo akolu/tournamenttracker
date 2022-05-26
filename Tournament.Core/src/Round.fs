@@ -17,7 +17,7 @@ type Round =
         this.Pairings
         |> List.map (fun p -> [ p.Player1; p.Player2 ])
         |> List.concat
-        |> List.sortBy (fun (_, score) -> -score.Primary)
+        |> List.sortBy (fun (p, score) -> -score.Primary, -score.Secondary, p)
 
 let private pairsToPairings pairs =
     pairs
@@ -27,10 +27,10 @@ let private pairsToPairings pairs =
           Player2 = p2Name, Score.Empty })
 
 // TODO: change fn to return Result
-let internal createPairings fn (standings: List<string * int>) round =
+let internal createPairings fn (standings: List<string * Score>) round =
     let playerList =
         match standings with
-        | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", 0) ]
+        | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", Score.Empty) ]
         | _ -> standings
 
     if round.Status = Pregame then

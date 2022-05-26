@@ -1,15 +1,15 @@
 module Results.State
 
 open Elmish
-open Tournament.Round
 open Tournament.Tournament
 open Tournament.Player
+open Tournament.Pairing
 
 type ResultsModel =
     { Editable: string option
       Tournament: Tournament
       Bonus: Map<string, int>
-      Standings: (string * int) list }
+      Standings: (string * Score) list }
 
 type ResultsMsg =
     | Edit of string
@@ -20,11 +20,11 @@ type ResultsMsg =
 let private getTotalScore (t: Tournament) =
     t.Standings()
     |> List.filter (fun (name, _) -> List.exists (fun p -> p.Name = name) t.Players)
-    |> List.map (fun res ->
-        match List.tryFind (fun p -> p.Name = fst res) t.Players with
-        | Some p -> (fst res, snd res + p.BonusScore)
-        | None -> res)
-    |> List.sortBy (fun (_, score) -> -score)
+    |> List.map (fun (player, score) ->
+        match List.tryFind (fun p -> p.Name = player) t.Players with
+        | Some p -> (player, { score with Primary = score.Primary + p.BonusScore })
+        | None -> (player, score))
+    |> List.sortBy (fun (p, score) -> -score.Primary, -score.Secondary, p)
 
 let init (t: Tournament) =
     { Editable = None

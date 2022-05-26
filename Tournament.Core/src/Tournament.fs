@@ -41,14 +41,18 @@ type Tournament =
         if (this.Rounds.IsEmpty) then
             []
         elif this.Rounds.Head.Pairings.IsEmpty then
-            this.Players |> List.map (fun p -> p.Name, 0)
+            this.Players
+            |> List.map (fun p -> p.Name, Score.Empty)
         else
             this.Rounds
             |> List.take rnd
             |> List.collect ((fun r -> r.Standings))
             |> List.groupBy (fun p -> fst p)
-            |> List.map (fun r -> fst r, snd r |> List.sumBy (fun (_, s) -> s.Primary))
-            |> List.sortBy (fun (_, score) -> -score)
+            |> List.map (fun (player, score) ->
+                player,
+                { Primary = score |> List.sumBy (fun (_, s) -> s.Primary)
+                  Secondary = score |> List.sumBy (fun (_, s) -> s.Secondary) })
+            |> List.sortBy (fun (p, score) -> -score.Primary, -score.Secondary, p)
 
     member this.Standings() = this.Standings this.Rounds.Length
 

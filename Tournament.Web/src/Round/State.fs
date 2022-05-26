@@ -8,7 +8,7 @@ open Tournament.Tournament
 type RoundModel =
     { Round: Round
       Form: Pairing option
-      StandingsAcc: (string * int) list }
+      StandingsAcc: (string * Score) list }
 
 type RoundMsg =
     | Edit of Pairing option

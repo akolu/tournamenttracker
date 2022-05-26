@@ -1,6 +1,7 @@
 namespace Tournament
 
 open System
+open Pairing
 
 module PairingGenerator =
     type PairingAlgorithm =
@@ -14,9 +15,9 @@ module PairingGenerator =
         |> List.fold (fun acc chunk -> acc @ [ (chunk.[0], chunk.[1]) ]) []
 
     type Pair<'a> = { P1: 'a; P2: 'a; Priority: int }
-    type Pairings<'a> = List<Pair<'a * int>>
+    type Pairings<'a> = List<Pair<'a * Score>>
 
-    let private getPairingMatrix (history: ('a * 'a) list) (players: ('a * int) list) =
+    let private getPairingMatrix (history: ('a * 'a) list) (players: ('a * Score) list) =
         let playersHavePlayed (p1: 'a) (p2: 'a) =
             match history
                   |> List.tryFind (fun pair -> ((=) pair (p1, p2) || (=) pair (p2, p1)))
@@ -24,8 +25,9 @@ module PairingGenerator =
             | Some _ -> true
             | None -> false
 
-        let getPriority (p1: 'a * int) (p2: 'a * int) : int =
-            let standings = List.sortBy (fun (name, score) -> -score, name) players
+        let getPriority (p1: 'a * Score) (p2: 'a * Score) : int =
+            let standings =
+                List.sortBy (fun (name, score) -> -score.Primary, -score.Secondary, name) players
 
             [ p1; p2 ]
             |> List.map (fun player -> List.findIndex (fun p -> p = player) standings)
@@ -40,7 +42,7 @@ module PairingGenerator =
                     match (playersHavePlayed (fst p1) (fst p2)) with
                     | true -> acc
                     | false ->
-                        let sorted = List.sortBy (fun (n, s) -> -s, n) [ p1; p2 ]
+                        let sorted = List.sortBy (fun (n, s) -> -s.Primary, -s.Secondary, n) [ p1; p2 ]
                         // TODO: random player1 / player2 instead of having higher-ranking player always player1
                         acc
                         @ [ { P1 = sorted.[0]
@@ -55,7 +57,7 @@ module PairingGenerator =
         (paired: Pairings<'a>)
         (unpaired: Pairings<'a>)
         (blacklist: List<Pairings<'a>>)
-        : option<Pair<'a * int>> =
+        : option<Pair<'a * Score>> =
         List.tryFind (fun pair -> not (List.exists (fun list -> (list = (paired @ [ pair ]))) blacklist)) unpaired
 
     let private filterPossiblePairings (paired: Pairings<'a>) (unpaired: Pairings<'a>) : Pairings<'a> =
@@ -70,10 +72,10 @@ module PairingGenerator =
                     || pair1.P2 = pair2.P1)
             ))
 
-    let swiss (history: ('a * 'a) list) (players: ('a * int) list) =
+    let swiss (history: ('a * 'a) list) (players: ('a * Score) list) =
         let pairingMatrix = players |> getPairingMatrix history
 
-        let allPlayersPaired (paired: List<Pair<'a * int>>) : bool =
+        let allPlayersPaired (paired: List<Pair<'a * Score>>) : bool =
             Seq.forall
                 (fun player -> (List.exists (fun pair -> ((=) pair.P1 player) || ((=) pair.P2 player)) paired))
                 players
