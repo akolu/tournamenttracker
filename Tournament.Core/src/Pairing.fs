@@ -1,21 +1,27 @@
 module Tournament.Pairing
 
-type Side =
-    { Name: string
-      PrimaryScore: int
-      SecondaryScore: int }
+type Score =
+    { Primary: int
+      Secondary: int }
+    static member Empty = { Primary = 0; Secondary = 0 }
+
+    static member Of num = { Primary = num; Secondary = 0 }
+
+    static member Of pair =
+        { Primary = fst pair
+          Secondary = snd pair }
 
 type Pairing =
     { Number: int
-      Player1: Side
-      Player2: Side }
+      Player1: string * Score
+      Player2: string * Score }
     member this.IsScored =
         not (
-            this.Player1.PrimaryScore = 0
-            && this.Player2.PrimaryScore = 0
+            (snd this.Player1).Primary = 0
+            && (snd this.Player2).Primary = 0
         )
 
     member this.Score result =
         { this with
-            Player1 = { this.Player1 with PrimaryScore = fst result }
-            Player2 = { this.Player2 with PrimaryScore = snd result } }
+            Player1 = fst this.Player1, fst result
+            Player2 = fst this.Player2, snd result }

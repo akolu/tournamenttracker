@@ -28,7 +28,7 @@ type Tournament =
                    |> List.fold
                        (fun pairs pairing ->
                            pairs
-                           @ [ pairing.Player1.Name, pairing.Player2.Name ])
+                           @ [ (fst pairing.Player1), (fst pairing.Player2) ])
                        []))
             []
 
@@ -46,8 +46,8 @@ type Tournament =
             this.Rounds
             |> List.take rnd
             |> List.collect ((fun r -> r.Standings))
-            |> List.groupBy (fun p -> p.Name)
-            |> List.map (fun r -> fst r, snd r |> List.sumBy (fun p -> p.PrimaryScore))
+            |> List.groupBy (fun p -> fst p)
+            |> List.map (fun r -> fst r, snd r |> List.sumBy (fun (_, s) -> s.Primary))
             |> List.sortBy (fun (_, score) -> -score)
 
     member this.Standings() = this.Standings this.Rounds.Length
