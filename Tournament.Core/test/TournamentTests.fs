@@ -13,19 +13,17 @@ type TestClass() =
 
     let table number (p1, p2) =
         { Number = number
-          Player1 = p1
-          Player2 = p2
-          Player1Score = 0
-          Player2Score = 0 }
+          Player1 = p1, Score.Empty
+          Player2 = p2, Score.Empty }
 
-    let result (p1Score, p2Score) pairing =
+    let result (p1Score: int, p2Score: int) pairing =
         { pairing with
-            Player1Score = p1Score
-            Player2Score = p2Score }
+            Player1 = fst pairing.Player1, Score.Of p1Score
+            Player2 = fst pairing.Player2, Score.Of p2Score }
 
     let pairings (tournament: Tournament) =
         tournament.Pairings
-        |> List.map (fun pairing -> (pairing.Player1, pairing.Player2))
+        |> List.map (fun pairing -> (fst pairing.Player1, fst pairing.Player2))
 
     let names players = players |> List.map (fun p -> p.Name)
 
@@ -199,8 +197,8 @@ type TestClass() =
             Tournament.Create(2, [ "Alice"; "Bob"; "James"; "Michael" ])
             >>= pair Shuffle
             >>= startRound // round 1
-            >>= score 1 (15, 5)
-            >>= score 2 (2, 18)
+            >>= score 1 (Score.Of 15, Score.Of 5)
+            >>= score 2 (Score.Of 2, Score.Of 18)
             >>= finishRound
             |> unwrap
 
@@ -211,8 +209,8 @@ type TestClass() =
             t1
             |> pair Swiss
             >>= startRound
-            >>= score 1 (20, 0)
-            >>= score 2 (3, 17)
+            >>= score 1 (Score.Of 20, Score.Of 0)
+            >>= score 2 (Score.Of 3, Score.Of 17)
             >>= finishRound
             |> unwrap
 
@@ -235,7 +233,7 @@ type TestClass() =
             Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
-            >>= score 1 (10, 10)
+            >>= score 1 (Score.Of 10, Score.Of 10)
             >>= finishRound
             >>= finishRound
 
@@ -265,10 +263,10 @@ type TestClass() =
             |> unwrap
 
         let pairings = tournament.Rounds.[0].Pairings
-        Assert.AreEqual("Alice", pairings.[0].Player1)
-        Assert.AreEqual("Bob", pairings.[0].Player2)
-        Assert.AreEqual("James", pairings.[1].Player1)
-        Assert.AreEqual("Michael", pairings.[1].Player2)
+        Assert.AreEqual("Alice", fst pairings.[0].Player1)
+        Assert.AreEqual("Bob", fst pairings.[0].Player2)
+        Assert.AreEqual("James", fst pairings.[1].Player1)
+        Assert.AreEqual("Michael", fst pairings.[1].Player2)
 
     [<Test>]
     [<Category("pair")>]
@@ -278,8 +276,8 @@ type TestClass() =
             >>= pair Swiss
             |> unwrap
 
-        Assert.AreEqual("Alice", tournament.Rounds.[0].Pairings.[0].Player1)
-        Assert.AreEqual("BYE", tournament.Rounds.[0].Pairings.[0].Player2)
+        Assert.AreEqual("Alice", fst tournament.Rounds.[0].Pairings.[0].Player1)
+        Assert.AreEqual("BYE", fst tournament.Rounds.[0].Pairings.[0].Player2)
 
     [<Test>]
     [<Category("score")>]
@@ -293,13 +291,13 @@ type TestClass() =
 
         let tournament =
             { (Tournament.Create 1 |> unwrap) with Rounds = unscored }
-            |> score 456 (13, 8)
+            |> score 456 (Score.Of 13, Score.Of 8)
             |> unwrap
 
         let round = tournament.Rounds.[0]
         Assert.AreEqual(unscored.[0].Pairings.[0], round.Pairings.[0])
-        Assert.AreEqual(13, round.Pairings.[1].Player1Score)
-        Assert.AreEqual(8, round.Pairings.[1].Player2Score)
+        Assert.AreEqual(13, (snd round.Pairings.[1].Player1).Primary)
+        Assert.AreEqual(8, (snd round.Pairings.[1].Player2).Primary)
 
     [<Test>]
     [<Category("score")>]
@@ -314,12 +312,22 @@ type TestClass() =
 
         let tournament =
             { (Tournament.Create 1 |> unwrap) with Rounds = unscored }
-            |> score 123 (15, 5)
+            |> score 123 (Score.Of 15, Score.Of 5)
             |> unwrap
 
         Assert.AreEqual(unscored.[0], tournament.Rounds.[0])
-        Assert.AreEqual(15, tournament.Rounds.[1].Pairings.[0].Player1Score)
-        Assert.AreEqual(5, tournament.Rounds.[1].Pairings.[0].Player2Score)
+
+        Assert.AreEqual(
+            15,
+            (snd tournament.Rounds.[1].Pairings.[0].Player1)
+                .Primary
+        )
+
+        Assert.AreEqual(
+            5,
+            (snd tournament.Rounds.[1].Pairings.[0].Player2)
+                .Primary
+        )
 
     [<Test>]
     [<Category("score")>]
@@ -328,7 +336,7 @@ type TestClass() =
             Tournament.Create(1, [ "Alice"; "Bob" ])
             >>= pair Shuffle
             >>= startRound
-            >>= score 123 (11, 9)
+            >>= score 123 (Score.Of 11, Score.Of 9)
 
         match tournament with
         | Ok _ -> failwith "Did not throw"
@@ -340,9 +348,9 @@ type TestClass() =
         match Tournament.Create(1, [ "Alice"; "Bob" ])
               >>= pair Shuffle
               >>= startRound
-              >>= score 1 (10, 10)
+              >>= score 1 (Score.Of 10, Score.Of 10)
               >>= finishRound
-              >>= score 1 (11, 9)
+              >>= score 1 (Score.Of 11, Score.Of 9)
             with
         | Ok _ -> failwith "Did not throw"
         | Error err -> Assert.AreEqual("Tournament already finished", err)
@@ -364,8 +372,8 @@ type TestClass() =
 
         let finished =
             tournament
-            |> score 1 (16, 4)
-            >>= score 2 (1, 19)
+            |> score 1 (Score.Of 16, Score.Of 4)
+            >>= score 2 (Score.Of 1, Score.Of 19)
             >>= finishRound
             |> unwrap
 
@@ -379,27 +387,47 @@ type TestClass() =
               Status = Finished
               Pairings =
                 [ { Number = 1
-                    Player1 = "Alice"
-                    Player2 = "Bob"
-                    Player1Score = 4
-                    Player2Score = 16 }
+                    Player1 = "Alice", (Score.Of 4)
+                    Player2 = "Bob", (Score.Of 16) }
                   { Number = 2
-                    Player1 = "James"
-                    Player2 = "Michael"
-                    Player1Score = 15
-                    Player2Score = 5 } ] }
+                    Player1 = "James", (Score.Of 15)
+                    Player2 = "Michael", (Score.Of 5) } ] }
 
         CollectionAssert.AreEqual(
-            [ ("Bob", 16)
-              ("James", 15)
-              ("Michael", 5)
-              ("Alice", 4) ],
+            [ "Bob", (Score.Of 16)
+              "James", (Score.Of 15)
+              "Michael", (Score.Of 5)
+              "Alice", (Score.Of 4) ],
             round.Standings
         )
 
+
     [<Test>]
     [<Category("standings")>]
-    member this.``total standings are listed in map with scores from all rounds``() =
+    member this.``round standings uses secondary score as tiebreaker``() =
+        let round =
+            { Number = 1
+              Status = Finished
+              Pairings =
+                [ { Number = 1
+                    Player1 = "Alice", { Primary = 10; Secondary = 1 }
+                    Player2 = "Bob", { Primary = 10; Secondary = 4 } }
+                  { Number = 2
+                    Player1 = "James", { Primary = 10; Secondary = 2 }
+                    Player2 = "Michael", { Primary = 10; Secondary = 3 } } ] }
+
+        CollectionAssert.AreEqual(
+            [ "Bob", { Primary = 10; Secondary = 4 }
+              "Michael", { Primary = 10; Secondary = 3 }
+              "James", { Primary = 10; Secondary = 2 }
+              "Alice", { Primary = 10; Secondary = 1 } ],
+            round.Standings
+        )
+
+
+    [<Test>]
+    [<Category("standings")>]
+    member this.``tournament standings counts scores from all rounds``() =
         let rounds =
             [ { Number = 1
                 Status = Finished
@@ -415,25 +443,49 @@ type TestClass() =
         let tournament = { (Tournament.Create 2 |> unwrap) with Rounds = rounds }
 
         CollectionAssert.AreEqual(
-            [ ("Michael", 32)
-              ("Alice", 19)
-              ("Bob", 18)
-              ("James", 11) ],
+            [ ("Michael", Score.Of 32)
+              ("Alice", Score.Of 19)
+              ("Bob", Score.Of 18)
+              ("James", Score.Of 11) ],
             tournament.Standings()
         )
 
     [<Test>]
     [<Category("standings")>]
-    member this.``total standings are equal to player list if no rounds have been played``() =
+    member this.``tournament standings uses secondary score as tiebreaker from all rounds``() =
+        let tournament =
+            Tournament.Create(2, [ "Alice"; "Bob"; "James"; "Michael" ])
+            >>= pair Swiss
+            >>= startRound
+            >>= score 1 ({ Primary = 10; Secondary = 1 }, { Primary = 10; Secondary = 4 }) // Alice 10 (1), Bob 10 (4)
+            >>= score 2 ({ Primary = 10; Secondary = 2 }, { Primary = 10; Secondary = 3 }) // James 10 (2), Michael 10 (3)
+            >>= finishRound
+            >>= pair Swiss
+            >>= startRound
+            >>= score 1 ({ Primary = 10; Secondary = 4 }, { Primary = 10; Secondary = 2 }) // Bob 10 (4), Michael 10 (2)
+            >>= score 2 ({ Primary = 10; Secondary = 3 }, { Primary = 10; Secondary = 1 }) // James 10 (3), Alice 10 (1)
+            |> unwrap
+
+        CollectionAssert.AreEqual(
+            [ "Bob", { Primary = 20; Secondary = 8 }
+              "James", { Primary = 20; Secondary = 5 }
+              "Michael", { Primary = 20; Secondary = 5 }
+              "Alice", { Primary = 20; Secondary = 2 } ],
+            tournament.Standings()
+        )
+
+    [<Test>]
+    [<Category("standings")>]
+    member this.``tournament standings are equal to player list if no rounds have been played``() =
         let tournament =
             Tournament.Create(1, [ "Alice"; "Bob"; "James"; "Michael" ])
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 0)
-              ("Bob", 0)
-              ("James", 0)
-              ("Michael", 0) ],
+            [ ("Alice", Score.Of 0)
+              ("Bob", Score.Of 0)
+              ("James", Score.Of 0)
+              ("Michael", Score.Of 0) ],
             tournament.Standings()
         )
 
@@ -539,19 +591,19 @@ type TestClass() =
         // ROUND 1 SCORES
         let round1Finished =
             round1
-            |> score 1 (15, 5) // Alice 15, Bob 5
-            >>= score 2 (11, 9) // Jack 11, James 9
-            >>= score 3 (7, 13) // Lily 7, Michael 13
+            |> score 1 (Score.Of 15, Score.Of 5) // Alice 15, Bob 5
+            >>= score 2 (Score.Of 11, Score.Of 9) // Jack 11, James 9
+            >>= score 3 (Score.Of 7, Score.Of 13) // Lily 7, Michael 13
             >>= finishRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 15)
-              ("Michael", 13)
-              ("Jack", 11)
-              ("James", 9)
-              ("Lily", 7)
-              ("Bob", 5) ],
+            [ ("Alice", Score.Of 15)
+              ("Michael", Score.Of 13)
+              ("Jack", Score.Of 11)
+              ("James", Score.Of 9)
+              ("Lily", Score.Of 7)
+              ("Bob", Score.Of 5) ],
             round1Finished.Standings()
         )
 
@@ -572,19 +624,19 @@ type TestClass() =
         // ROUND 2 RESULTS
         let round2Finished =
             round2
-            |> score 1 (20, 0) // Alice 20, Michael 0
-            >>= score 2 (4, 16) // Jack 4, Lily 16
-            >>= score 3 (9, 11) // James 9, Bob 11
+            |> score 1 (Score.Of 20, Score.Of 0) // Alice 20, Michael 0
+            >>= score 2 (Score.Of 4, Score.Of 16) // Jack 4, Lily 16
+            >>= score 3 (Score.Of 9, Score.Of 11) // James 9, Bob 11
             >>= finishRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 35)
-              ("Lily", 23)
-              ("James", 18)
-              ("Bob", 16)
-              ("Jack", 15)
-              ("Michael", 13) ],
+            [ ("Alice", Score.Of 35)
+              ("Lily", Score.Of 23)
+              ("James", Score.Of 18)
+              ("Bob", Score.Of 16)
+              ("Jack", Score.Of 15)
+              ("Michael", Score.Of 13) ],
             round2Finished.Standings()
         )
 
@@ -605,19 +657,19 @@ type TestClass() =
         // ROUND 3 RESULTS
         let round3Finished =
             round3
-            |> score 1 (20, 0) // Alice 20, Lily 0
-            >>= score 2 (9, 11) // James 9, Michael 11
-            >>= score 3 (10, 10) // Bob 10, Jack 10
+            |> score 1 (Score.Of 20, Score.Of 0) // Alice 20, Lily 0
+            >>= score 2 (Score.Of 9, Score.Of 11) // James 9, Michael 11
+            >>= score 3 (Score.Of 10, Score.Of 10) // Bob 10, Jack 10
             >>= finishRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 55)
-              ("James", 27)
-              ("Bob", 26)
-              ("Jack", 25)
-              ("Michael", 24)
-              ("Lily", 23) ],
+            [ ("Alice", Score.Of 55)
+              ("James", Score.Of 27)
+              ("Bob", Score.Of 26)
+              ("Jack", Score.Of 25)
+              ("Michael", Score.Of 24)
+              ("Lily", Score.Of 23) ],
             round3Finished.Standings()
         )
 
@@ -638,18 +690,18 @@ type TestClass() =
         // ROUND 4 RESULTS
         let round4Finished =
             round4
-            |> score 1 (3, 17) // Alice 3, James 17
-            >>= score 2 (9, 11) // Bob 9, Lily 11
-            >>= score 3 (15, 5) // Jack 15, Michael 5
+            |> score 1 (Score.Of 3, Score.Of 17) // Alice 3, James 17
+            >>= score 2 (Score.Of 9, Score.Of 11) // Bob 9, Lily 11
+            >>= score 3 (Score.Of 15, Score.Of 5) // Jack 15, Michael 5
             >>= finishRound
             |> unwrap
 
         CollectionAssert.AreEqual(
-            [ ("Alice", 58)
-              ("James", 44)
-              ("Jack", 40)
-              ("Bob", 35)
-              ("Lily", 34)
-              ("Michael", 29) ],
+            [ ("Alice", Score.Of 58)
+              ("James", Score.Of 44)
+              ("Jack", Score.Of 40)
+              ("Bob", Score.Of 35)
+              ("Lily", Score.Of 34)
+              ("Michael", Score.Of 29) ],
             round4Finished.Standings()
         )

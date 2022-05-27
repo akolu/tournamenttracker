@@ -62,18 +62,20 @@ let private Pairing (pairing: Pairing) =
         prop.onClick (fun _ -> dispatch (Edit(Some pairing)))
         prop.children [
             Html.span pairing.Number
-            Html.span pairing.Player1
+            Html.span (fst pairing.Player1)
             Html.span [
                 prop.children (
                     score
-                        pairing.Player1Score
+                        (snd pairing.Player1).Primary
                         [ prop.ref (fun node -> p1Ref.current <- node)
                           prop.onChange (fun num -> dispatch (SetPlayer1Score num)) ]
                 )
             ]
-            Html.span pairing.Player2
+            Html.span (fst pairing.Player2)
             Html.span [
-                prop.children (score pairing.Player2Score [ prop.onChange (fun num -> dispatch (SetPlayer2Score num)) ])
+                prop.children (
+                    score (snd pairing.Player2).Primary [ prop.onChange (fun num -> dispatch (SetPlayer2Score num)) ]
+                )
             ]
         ]
     ]

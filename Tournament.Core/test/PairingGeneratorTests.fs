@@ -2,15 +2,16 @@
 
 open Tournament.PairingGenerator
 open NUnit.Framework
+open Tournament.Pairing
 
 [<TestFixture>]
 type TestClass() =
 
     let players =
-        [ ("Alice", 28)
-          ("Bob", 14)
-          ("James", 21)
-          ("Michael", 17) ]
+        [ ("Alice", Score.Of 28)
+          ("Bob", Score.Of 14)
+          ("James", Score.Of 21)
+          ("Michael", Score.Of 17) ]
 
     [<Test>]
     member this.``shuffle yields different result in two parallel shuffles``() =
@@ -27,33 +28,48 @@ type TestClass() =
             shuffled
             |> List.fold (fun acc (p1, p2) -> acc @ [ p1; p2 ]) []
 
-        CollectionAssert.Contains(playersFromShuffledList, ("Alice", 28))
-        CollectionAssert.Contains(playersFromShuffledList, ("Bob", 14))
-        CollectionAssert.Contains(playersFromShuffledList, ("James", 21))
-        CollectionAssert.Contains(playersFromShuffledList, ("Michael", 17))
+        CollectionAssert.Contains(playersFromShuffledList, ("Alice", Score.Of 28))
+        CollectionAssert.Contains(playersFromShuffledList, ("Bob", Score.Of 14))
+        CollectionAssert.Contains(playersFromShuffledList, ("James", Score.Of 21))
+        CollectionAssert.Contains(playersFromShuffledList, ("Michael", Score.Of 17))
 
     [<Test>]
-    member this.``swiss orders player list by score with higher ranking player being player 1``() =
+    member this.``swiss orders player list by primary score with higher ranking player being player 1``() =
         let swissed = players |> swiss []
 
         Assert.AreEqual(
-            [ (("Alice", 28), ("James", 21))
-              (("Michael", 17), ("Bob", 14)) ],
+            [ (("Alice", Score.Of 28), ("James", Score.Of 21))
+              (("Michael", Score.Of 17), ("Bob", Score.Of 14)) ],
             swissed
         )
 
     [<Test>]
-    member this.``swiss orders players by alphabetically if score is tied``() =
+    member this.``swiss orders players by secondary score if primary score is tied``() =
         let swissed =
-            [ ("Bob", 20)
-              ("Michael", 10)
-              ("Alice", 0)
-              ("James", 10) ]
+            [ ("Bob", { Primary = 10; Secondary = 2 })
+              ("Michael", { Primary = 10; Secondary = 1 })
+              ("Alice", { Primary = 10; Secondary = 4 })
+              ("James", { Primary = 10; Secondary = 3 }) ]
+            |> swiss []
+
+        CollectionAssert.AreEqual(
+            [ ("Alice", { Primary = 10; Secondary = 4 }), ("James", { Primary = 10; Secondary = 3 })
+              ("Bob", { Primary = 10; Secondary = 2 }), ("Michael", { Primary = 10; Secondary = 1 }) ],
+            swissed
+        )
+
+    [<Test>]
+    member this.``swiss orders players by alphabetically if primary and secondary scores are tied``() =
+        let swissed =
+            [ ("Bob", Score.Of 20)
+              ("Michael", Score.Of 10)
+              ("Alice", Score.Of 0)
+              ("James", Score.Of 10) ]
             |> swiss []
 
         Assert.AreEqual(
-            [ (("Bob", 20), ("James", 10))
-              (("Michael", 10), ("Alice", 0)) ],
+            [ (("Bob", Score.Of 20), ("James", Score.Of 10))
+              (("Michael", Score.Of 10), ("Alice", Score.Of 0)) ],
             swissed
         )
 
@@ -66,8 +82,8 @@ type TestClass() =
         let swissed = players |> swiss history
 
         Assert.AreEqual(
-            [ (("Alice", 28), ("Michael", 17))
-              (("James", 21), ("Bob", 14)) ],
+            [ (("Alice", Score.Of 28), ("Michael", Score.Of 17))
+              (("James", Score.Of 21), ("Bob", Score.Of 14)) ],
             swissed
         )
 
@@ -84,19 +100,19 @@ type TestClass() =
               ("Bob", "James") ]
 
         let players =
-            [ ("Alice", 30)
-              ("Lily", 30)
-              ("Michael", 21)
-              ("James", 20)
-              ("Jack", 10)
-              ("Bob", 9) ]
+            [ ("Alice", Score.Of 30)
+              ("Lily", Score.Of 30)
+              ("Michael", Score.Of 21)
+              ("James", Score.Of 20)
+              ("Jack", Score.Of 10)
+              ("Bob", Score.Of 9) ]
 
         let swissed = players |> swiss history
 
         Assert.AreEqual(
-            [ (("Alice", 30), ("Lily", 30))
-              (("Michael", 21), ("Bob", 9))
-              (("James", 20), ("Jack", 10)) ],
+            [ (("Alice", Score.Of 30), ("Lily", Score.Of 30))
+              (("Michael", Score.Of 21), ("Bob", Score.Of 9))
+              (("James", Score.Of 20), ("Jack", Score.Of 10)) ],
             swissed
         )
 
@@ -111,18 +127,18 @@ type TestClass() =
               ("Bob", "James") ]
 
         let players =
-            [ ("Alice", 6)
-              ("Lily", 5)
-              ("Jack", 4)
-              ("Michael", 3)
-              ("Bob", 2)
-              ("James", 1) ]
+            [ ("Alice", Score.Of 6)
+              ("Lily", Score.Of 5)
+              ("Jack", Score.Of 4)
+              ("Michael", Score.Of 3)
+              ("Bob", Score.Of 2)
+              ("James", Score.Of 1) ]
 
         let swissed = players |> swiss history
 
         Assert.AreEqual(
-            [ (("Alice", 6), ("Jack", 4))
-              (("Lily", 5), ("Bob", 2))
-              (("Michael", 3), ("James", 1)) ],
+            [ (("Alice", Score.Of 6), ("Jack", Score.Of 4))
+              (("Lily", Score.Of 5), ("Bob", Score.Of 2))
+              (("Michael", Score.Of 3), ("James", Score.Of 1)) ],
             swissed
         )

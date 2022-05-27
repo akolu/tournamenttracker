@@ -16,7 +16,6 @@ type TournamentModel =
       CurrentTab: int }
 
 type TournamentMsg =
-    | Score of {| nr: int; result: int * int |}
     | SetActivePage of int
     | SettingsMsg of Settings.State.SettingsMsg
     | RoundMsg of Round.State.RoundMsg
@@ -75,7 +74,6 @@ let replaceRound msg state =
 
 let update msg state =
     match msg with
-    | Score p -> { state with Tournament = state.Tournament |> score p.nr p.result |> unwrap }, Cmd.none
     | SetActivePage tab -> { state with CurrentTab = tab }, Cmd.ofMsg (RoundMsg(Round.State.RoundMsg.Edit None))
     | SettingsMsg msg' ->
         let res, cmd = Settings.State.update msg' state.PageModels.Settings
@@ -94,7 +92,7 @@ let update msg state =
         | Round.State.StartRound -> tournamentUpdated startRound state, Cmd.none
         | Round.State.FinishRound -> tournamentUpdated nextRound state, Cmd.ofMsg (SetActivePage(state.CurrentTab + 1))
         | Round.State.ConfirmScore p ->
-            tournamentUpdated (score p.Number (p.Player1Score, p.Player2Score)) state, Cmd.none
+            tournamentUpdated (score p.Number (snd p.Player1, snd p.Player2)) state, Cmd.none
         | _ -> replaceRound msg' state
     | ResultsMsg msg' ->
         let res, cmd = Results.State.update msg' state.PageModels.Results

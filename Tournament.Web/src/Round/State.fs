@@ -8,7 +8,7 @@ open Tournament.Tournament
 type RoundModel =
     { Round: Round
       Form: Pairing option
-      StandingsAcc: (string * int) list }
+      StandingsAcc: (string * Score) list }
 
 type RoundMsg =
     | Edit of Pairing option
@@ -36,7 +36,11 @@ let update msg model =
             ]
         | _ -> { model with Form = p }, Cmd.none
     // TODO: refactor direct option value access -> change to pattern matching
-    | SetPlayer1Score e -> { model with Form = Some { model.Form.Value with Player1Score = e } }, Cmd.none
-    | SetPlayer2Score e -> { model with Form = Some { model.Form.Value with Player2Score = e } }, Cmd.none
+    | SetPlayer1Score e ->
+        { model with Form = Some { model.Form.Value with Player1 = (fst model.Form.Value.Player1), Score.Of e } },
+        Cmd.none
+    | SetPlayer2Score e ->
+        { model with Form = Some { model.Form.Value with Player2 = (fst model.Form.Value.Player2), Score.Of e } },
+        Cmd.none
     | ConfirmScore _ -> { model with Form = None }, Cmd.none
     | _ -> model, Cmd.none
