@@ -68,13 +68,17 @@ let private Pairing (pairing: Pairing) =
                     score
                         (snd pairing.Player1).Primary
                         [ prop.ref (fun node -> p1Ref.current <- node)
-                          prop.onChange (fun num -> dispatch (SetPlayer1Score num)) ]
+                          prop.onChange (fun num ->
+                              dispatch (SetPlayer1Score { snd pairing.Player1 with Primary = num })) ]
                 )
             ]
             Html.span (fst pairing.Player2)
             Html.span [
                 prop.children (
-                    score (snd pairing.Player2).Primary [ prop.onChange (fun num -> dispatch (SetPlayer2Score num)) ]
+                    score
+                        (snd pairing.Player2).Primary
+                        [ prop.onChange (fun num ->
+                              dispatch (SetPlayer2Score { snd pairing.Player2 with Primary = num })) ]
                 )
             ]
         ]

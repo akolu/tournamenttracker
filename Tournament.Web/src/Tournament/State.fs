@@ -4,6 +4,8 @@ open Elmish
 open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
+open Pairing
+open System
 
 type PageModels =
     { Settings: Settings.State.SettingsModel
@@ -71,6 +73,25 @@ let replaceRound msg state =
         { state with PageModels = { state.PageModels with Rounds = Map.add rnd.Number res state.PageModels.Rounds } },
         Cmd.map RoundMsg cmd
     | None -> state, Cmd.none
+
+let getStrengthOfSchedule (model: Round.State.RoundModel) (pairing: Pairing) =
+    match model.Round.Start,
+          model.Round.Pairings
+          |> List.tryFind (fun p -> (=) p.Number pairing.Number)
+        with
+    | _, Some p when p.IsScored -> pairing // pairing was already scored before -> do not modify end time
+    | Some t, Some _ ->
+        let seconds =
+            ((-) (DateTimeOffset(t).ToUnixTimeSeconds()) (DateTimeOffset(DateTime.Now).ToUnixTimeSeconds())
+             |> int)
+        // secondary score is negative because secondary score is ordered as descending and less elapsed time is better
+        { pairing with
+            Player1 = fst pairing.Player1, { snd pairing.Player1 with Secondary = -seconds }
+            Player2 = fst pairing.Player2, { snd pairing.Player2 with Secondary = -seconds } }
+    | _ ->
+        { pairing with
+            Player1 = fst pairing.Player1, { snd pairing.Player1 with Secondary = 0 }
+            Player2 = fst pairing.Player2, { snd pairing.Player2 with Secondary = 0 } }
 
 let update msg state =
     match msg with

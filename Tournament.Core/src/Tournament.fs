@@ -9,7 +9,9 @@ open Player
 type Tournament =
     { Rounds: Round list
       Players: Player list }
-    member this.CurrentRound = List.tryFind (fun rnd -> rnd.Status <> Finished) this.Rounds
+    member this.CurrentRound =
+        this.Rounds
+        |> List.tryFind (fun r -> r.Status <> Finished)
 
     member internal this.ModifyCurrentRound(fn: Round -> Result<Round, string>) =
         match this.CurrentRound with
@@ -56,13 +58,16 @@ type Tournament =
 
     member this.Standings() = this.Standings this.Rounds.Length
 
-    member this.Finished = Seq.forall (fun r -> r.Status = Finished) this.Rounds
+    member this.Finished =
+        this.Rounds
+        |> Seq.forall (fun r -> r.Status = Finished)
 
     static member Create(rounds, players: string list) =
         let defaultRound index =
             { Number = (+) index 1
               Pairings = []
-              Status = Pregame }
+              Start = None
+              Finish = None }
 
         if rounds = 0 then
             Error "Tournament should have at least one round"

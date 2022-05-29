@@ -2,7 +2,7 @@ module Tournament.Round
 
 open Utils
 open Pairing
-open Player
+open System
 
 type RoundStatus =
     | Pregame
@@ -12,12 +12,19 @@ type RoundStatus =
 type Round =
     { Number: int
       Pairings: List<Pairing>
-      Status: RoundStatus }
+      Start: DateTime option
+      Finish: DateTime option }
     member this.Standings =
         this.Pairings
         |> List.map (fun p -> [ p.Player1; p.Player2 ])
         |> List.concat
         |> List.sortBy (fun (p, score) -> -score.Primary, -score.Secondary, p)
+
+    member this.Status =
+        match this.Start, this.Finish with
+        | Some _, Some _ -> Finished
+        | Some _, _ -> Ongoing
+        | _ -> Pregame
 
 let private pairsToPairings pairs =
     pairs
@@ -27,7 +34,7 @@ let private pairsToPairings pairs =
           Player2 = p2Name, Score.Empty })
 
 // TODO: change fn to return Result
-let internal createPairings fn (standings: List<string * Score>) round =
+let internal createPairings fn (standings: List<string * Score>) (round: Round) =
     let playerList =
         match standings with
         | list when (<>) ((%) list.Length 2) 0 -> standings @ [ ("BYE", Score.Empty) ]
@@ -66,17 +73,18 @@ let internal swapPlayers player1 player2 round =
     | (Error err, _) -> Error err
     | (_, Error err) -> Error err
 
-let internal start round =
+let internal start (round: Round) =
     match round.Status with
-    | Pregame when not round.Pairings.IsEmpty -> Ok { round with Status = Ongoing }
+    | Pregame when not round.Pairings.IsEmpty -> Ok { round with Start = Some DateTime.Now }
     | Pregame -> Error(sprintf "Unable to start round %i: no pairings" round.Number)
     | Ongoing -> Error(sprintf "Unable to start round %i: round already started" round.Number)
     | Finished -> Error(sprintf "Unable to start round %i: round already finished" round.Number)
 
-let internal finish round =
+let internal finish (round: Round) =
     match round.Status with
     | Pregame -> Error(sprintf "Unable to finish round %i: round not started" round.Number)
-    | Ongoing when Seq.forall (fun (p: Pairing) -> p.IsScored) round.Pairings -> Ok { round with Status = Finished }
+    | Ongoing when Seq.forall (fun (p: Pairing) -> p.IsScored) round.Pairings ->
+        Ok { round with Finish = Some DateTime.Now }
     | Ongoing -> Error(sprintf "Unable to finish round %i: unscored pairings exist" round.Number)
     | Finished -> Error(sprintf "Unable to finish round %i: round already finished" round.Number)
 
