@@ -7,12 +7,27 @@
         margin-right: .5rem;
     }
 
-    & .Standings__root > div > span > aside {
-        display: none;
+    & .Standings__root > div:first-child aside > b {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    & .Standings__root > div:not(:first-of-type) aside {
+        font-size: x-small;
+        display: flex;
+        align-items: center;
     }
 }
 
 .Round__pairings_grid-wrapper {
+
+    font-family: $table_font;
+
+    & > div:first-child {
+        font-size: small;
+        text-transform: uppercase;
+        border-bottom: $table_border;
+    }
     
     & > div:not(:first-child):nth-child(odd){
         background: $table_accent_color;

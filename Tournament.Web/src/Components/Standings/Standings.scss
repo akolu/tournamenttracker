@@ -2,9 +2,16 @@
 
 .Standings__root {
     width: 100%;
+    font-family: $table_font;
 
     & aside {
         display: inline-block;
+    }
+
+    & > div:first-child {
+        font-size: small;
+        text-transform: uppercase;
+        border-bottom: $table_border;
     }
 
     & > div {

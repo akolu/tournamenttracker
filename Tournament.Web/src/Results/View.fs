@@ -27,7 +27,7 @@ let Results (state, dispatch) =
         [| box state.Editable |]
     )
 
-    let renderBonus (player: string) =
+    let renderBonus (player, _) =
         if state.Editable.IsSome then
             Html.input (
                 [ prop.type' "number"
@@ -58,7 +58,7 @@ let Results (state, dispatch) =
                 rounds = state.Tournament.Rounds,
                 total = state.Standings,
                 onClick = (fun p -> dispatch (Edit p)),
-                renderExtra = renderBonus
+                aside = ("Extra", renderBonus)
             )
             Html.span (
                 if state.Editable.IsSome then

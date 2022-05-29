@@ -15,6 +15,7 @@ type RoundMsg =
     | Edit of Pairing option
     | SetPlayer1Score of Score
     | SetPlayer2Score of Score
+    | SetSecondaryScore
     | ConfirmScore of Pairing
     | StartRound
     | FinishRound
