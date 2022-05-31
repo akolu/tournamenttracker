@@ -4,6 +4,8 @@ open Elmish
 open Tournament.Tournament
 open Tournament.Utils
 open Tournament.PairingGenerator
+open Pairing
+open System
 
 type PageModels =
     { Settings: Settings.State.SettingsModel

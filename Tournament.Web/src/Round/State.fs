@@ -4,6 +4,7 @@ open Elmish
 open Tournament.Pairing
 open Tournament.Round
 open Tournament.Tournament
+open System
 
 type RoundModel =
     { Round: Round
@@ -12,8 +13,9 @@ type RoundModel =
 
 type RoundMsg =
     | Edit of Pairing option
-    | SetPlayer1Score of int
-    | SetPlayer2Score of int
+    | SetPlayer1Score of Score
+    | SetPlayer2Score of Score
+    | SetSecondaryScore
     | ConfirmScore of Pairing
     | StartRound
     | FinishRound
@@ -35,12 +37,15 @@ let update msg model =
                 Cmd.ofMsg (Edit p)
             ]
         | _ -> { model with Form = p }, Cmd.none
-    // TODO: refactor direct option value access -> change to pattern matching
     | SetPlayer1Score e ->
-        { model with Form = Some { model.Form.Value with Player1 = (fst model.Form.Value.Player1), Score.Of e } },
+        (match model.Form with
+         | Some f -> { model with Form = Some { f with Player1 = (fst f.Player1, e) } }
+         | None -> model),
         Cmd.none
     | SetPlayer2Score e ->
-        { model with Form = Some { model.Form.Value with Player2 = (fst model.Form.Value.Player2), Score.Of e } },
+        (match model.Form with
+         | Some f -> { model with Form = Some { f with Player2 = (fst f.Player2, e) } }
+         | None -> model),
         Cmd.none
     | ConfirmScore _ -> { model with Form = None }, Cmd.none
     | _ -> model, Cmd.none

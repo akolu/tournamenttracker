@@ -8,10 +8,33 @@ open Tournament.Pairing
 open Components.Standings
 open Browser.Types
 open Round.State
+open System
+open System.Globalization
 
 Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 
 let context = React.createContext ()
+
+let secondary (start: DateTime option) (pairing: Pairing) =
+    match start with
+    | Some _ when
+        pairing.IsScored
+        && (snd pairing.Player1).Secondary <> 0
+        && (snd pairing.Player2).Secondary <> 0
+        ->
+        pairing // pairing was already scored before -> do not modify end time
+    | Some start when pairing.IsScored ->
+        let seconds =
+            ((-) (DateTimeOffset(start).ToUnixTimeSeconds()) (DateTimeOffset(DateTime.Now).ToUnixTimeSeconds())
+             |> int)
+        // secondary score is negative because secondary score is ordered as descending and less elapsed time is better
+        { pairing with
+            Player1 = fst pairing.Player1, { snd pairing.Player1 with Secondary = seconds }
+            Player2 = fst pairing.Player2, { snd pairing.Player2 with Secondary = seconds } }
+    | _ -> // pairing scores set to 0 ("unscored") -> reset Secondary as well
+        { pairing with
+            Player1 = fst pairing.Player1, { snd pairing.Player1 with Secondary = 0 }
+            Player2 = fst pairing.Player2, { snd pairing.Player2 with Secondary = 0 } }
 
 [<ReactComponent>]
 let private Pairing (pairing: Pairing) =
@@ -38,7 +61,7 @@ let private Pairing (pairing: Pairing) =
                 [ prop.type' "number"
                   prop.onKeyDown (fun e ->
                       match e.key, state.Form with
-                      | "Enter", Some p -> dispatch (ConfirmScore p)
+                      | "Enter", Some p -> dispatch (ConfirmScore(p |> secondary state.Round.Start))
                       | "Escape", _ -> dispatch (Edit None)
                       | _ -> ())
                   prop.inputMode.numeric
@@ -68,13 +91,17 @@ let private Pairing (pairing: Pairing) =
                     score
                         (snd pairing.Player1).Primary
                         [ prop.ref (fun node -> p1Ref.current <- node)
-                          prop.onChange (fun num -> dispatch (SetPlayer1Score num)) ]
+                          prop.onChange (fun num ->
+                              dispatch (SetPlayer1Score { snd pairing.Player1 with Primary = num })) ]
                 )
             ]
             Html.span (fst pairing.Player2)
             Html.span [
                 prop.children (
-                    score (snd pairing.Player2).Primary [ prop.onChange (fun num -> dispatch (SetPlayer2Score num)) ]
+                    score
+                        (snd pairing.Player2).Primary
+                        [ prop.onChange (fun num ->
+                              dispatch (SetPlayer2Score { snd pairing.Player2 with Primary = num })) ]
                 )
             ]
         ]
@@ -123,7 +150,19 @@ let Round (state, dispatch) =
                             column.isOneThird
                             prop.children [
                                 Bulma.Divider.divider "Standings"
-                                Components.Standings(rounds = [ state.Round ], total = state.StandingsAcc)
+                                Components.Standings(
+                                    rounds = [ state.Round ],
+                                    total = state.StandingsAcc,
+                                    aside =
+                                        ("Time",
+                                         (fun (_, score) ->
+                                             Html.span (
+                                                 System
+                                                     .TimeSpan
+                                                     .FromSeconds(score.Secondary |> float |> Math.Abs)
+                                                     .ToString("c", CultureInfo.InvariantCulture)
+                                             )))
+                                )
                             ]
                         ]
                     ]
@@ -157,7 +196,7 @@ let Round (state, dispatch) =
                           Bulma.button.button [
                               button.isSmall
                               button.isRounded
-                              prop.onClick (fun _ -> dispatch (ConfirmScore p))
+                              prop.onClick (fun _ -> dispatch (ConfirmScore(p |> secondary state.Round.Start)))
                               prop.children [
                                   Bulma.icon (Fa.i [ Fa.Solid.Check ] [])
                                   Html.b "Confirm"

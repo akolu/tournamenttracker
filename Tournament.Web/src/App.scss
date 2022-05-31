@@ -6,6 +6,8 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts/";
 @import "~@fortawesome/fontawesome-free/scss/regular.scss";
 
 $table_accent_color: whitesmoke;
+$table_border: 1px solid gainsboro;
+$table_font: monospace;
 
 .elmish-app {
     display: flex;

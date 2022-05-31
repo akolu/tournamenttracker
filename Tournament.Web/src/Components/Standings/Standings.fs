@@ -5,9 +5,11 @@ open Tournament.Round
 
 Fable.Core.JsInterop.importSideEffects "./Standings.scss"
 
+type AsideRenderFn = (string * Tournament.Pairing.Score) -> ReactElement
+
 type Components() =
     [<ReactComponent>]
-    static member Standings(rounds, total, (?renderExtra: string -> ReactElement), (?onClick: string -> unit)) =
+    static member Standings(rounds, total, (?aside: string * AsideRenderFn), (?onClick: string -> unit)) =
 
         let getPlayerScore player (round: Round) =
             match round.Standings
@@ -23,12 +25,11 @@ type Components() =
                       [ Html.span [
                             prop.children [ Html.b "Player" ]
                         ] ]
-                      @ (rounds
-                         |> List.map (fun r -> Html.b (sprintf "Round %d" r.Number)))
+                      @ (rounds |> List.map (fun r -> Html.b "Score"))
                         @ [ Html.span [
                                 prop.children [
-                                    match renderExtra with
-                                    | Some _ -> Html.aside [ Html.b "Extra" ]
+                                    match aside with
+                                    | Some (t, _) -> Html.aside [ Html.b t ]
                                     | None -> ()
                                     Html.b "Total"
                                 ]
@@ -50,8 +51,8 @@ type Components() =
                                   |> List.map (fun r -> Html.span (getPlayerScore player r)))
                                  @ [ Html.span [
                                          prop.children [
-                                             match renderExtra with
-                                             | Some fn -> Html.aside [ fn player ]
+                                             match aside with
+                                             | Some (_, fn) -> Html.aside [ fn (player, score) ]
                                              | None -> ()
                                              Html.span score.Primary
                                          ]

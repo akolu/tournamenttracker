@@ -48,10 +48,12 @@ type TestClass() =
         let expected =
             [ { Number = 1
                 Pairings = []
-                Status = Pregame }
+                Start = None
+                Finish = None }
               { Number = 2
                 Pairings = []
-                Status = Pregame } ]
+                Start = None
+                Finish = None } ]
 
         Assert.AreEqual(expected, tournament.Rounds)
 
@@ -284,7 +286,8 @@ type TestClass() =
     member this.``score can be set for pairing by table number``() =
         let unscored =
             [ { Number = 1
-                Status = Ongoing
+                Start = Some System.DateTime.Now
+                Finish = None
                 Pairings =
                   [ table 123 ("Alice", "Bob")
                     table 456 ("James", "Michael") ] } ]
@@ -304,10 +307,12 @@ type TestClass() =
     member this.``score is set for current round only``() =
         let unscored =
             [ { Number = 1
-                Status = Finished
+                Start = Some System.DateTime.Now
+                Finish = Some System.DateTime.Now
                 Pairings = [ table 123 ("Alice", "Bob") ] }
               { Number = 2
-                Status = Ongoing
+                Start = Some System.DateTime.Now
+                Finish = None
                 Pairings = [ table 123 ("Bob", "Alice") ] } ]
 
         let tournament =
@@ -384,7 +389,8 @@ type TestClass() =
     member this.``round standings is a of players ordered by score``() =
         let round =
             { Number = 1
-              Status = Finished
+              Start = Some System.DateTime.Now
+              Finish = Some System.DateTime.Now
               Pairings =
                 [ { Number = 1
                     Player1 = "Alice", (Score.Of 4)
@@ -407,7 +413,8 @@ type TestClass() =
     member this.``round standings uses secondary score as tiebreaker``() =
         let round =
             { Number = 1
-              Status = Finished
+              Start = Some System.DateTime.Now
+              Finish = Some System.DateTime.Now
               Pairings =
                 [ { Number = 1
                     Player1 = "Alice", { Primary = 10; Secondary = 1 }
@@ -430,12 +437,14 @@ type TestClass() =
     member this.``tournament standings counts scores from all rounds``() =
         let rounds =
             [ { Number = 1
-                Status = Finished
+                Start = Some System.DateTime.Now
+                Finish = Some System.DateTime.Now
                 Pairings =
                   [ table 1 ("Alice", "Bob") |> result (12, 8)
                     table 2 ("James", "Michael") |> result (1, 19) ] }
               { Number = 2
-                Status = Finished
+                Start = Some System.DateTime.Now
+                Finish = Some System.DateTime.Now
                 Pairings =
                   [ table 1 ("Michael", "Alice") |> result (13, 7)
                     table 2 ("Bob", "James") |> result (10, 10) ] } ]
@@ -509,7 +518,8 @@ type TestClass() =
     member this.``swap changes places even if they are already against each other``() =
         let rounds =
             [ { Number = 1
-                Status = Pregame
+                Start = None
+                Finish = None
                 Pairings = [ table 1 ("Alice", "Bob") ] } ]
 
         let tournament =
@@ -524,7 +534,8 @@ type TestClass() =
     member this.``swap returns Error if either player is not found in pairings list``() =
         let rounds =
             [ { Number = 1
-                Status = Pregame
+                Start = None
+                Finish = None
                 Pairings =
                   [ table 1 ("Alice", "Bob")
                     table 2 ("James", "Michael") ] } ]

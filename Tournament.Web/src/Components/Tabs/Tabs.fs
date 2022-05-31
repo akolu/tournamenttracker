@@ -31,7 +31,9 @@ type Components() =
             if tab > rounds.Length then
                 false
             else
-                match List.tryFind (fun r -> r.Status <> Finished) rounds with
+                match rounds
+                      |> List.tryFind (fun r -> r.Status <> Finished)
+                    with
                 | Some r when tab > r.Number -> true
                 | _ -> false
 
