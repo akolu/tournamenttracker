@@ -1,4 +1,4 @@
-name: pipeline
+name: test
 on: [push]
 jobs:
   test-core:
