@@ -1,6 +1,6 @@
 # Tournament Tracker
 
-![build](https://github.com/akolu/tournamenttracker/actions/workflows/pipeline.yml/badge.svg)
+![build](https://github.com/akolu/tournamenttracker/actions/workflows/test.yml/badge.svg)
 
 Next iteration of my yet-to-be-finished tournament tracker, this time with Fable, which compiles the F# code to JavaScript.
 
