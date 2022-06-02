@@ -155,11 +155,18 @@ let Round (state, dispatch) =
                                     total = state.StandingsAcc,
                                     aside =
                                         ("Time",
-                                         (fun (_, score) ->
+                                         (fun (player, _) ->
+                                             let secondary =
+                                                 match state.Round.Standings
+                                                       |> List.tryFind (fun p -> (=) player (fst p))
+                                                     with
+                                                 | Some s -> (snd s).Secondary
+                                                 | None -> 0
+
                                              Html.span (
                                                  System
                                                      .TimeSpan
-                                                     .FromSeconds(score.Secondary |> float |> Math.Abs)
+                                                     .FromSeconds(secondary |> float |> Math.Abs)
                                                      .ToString("c", CultureInfo.InvariantCulture)
                                              )))
                                 )
