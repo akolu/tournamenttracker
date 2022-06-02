@@ -23,19 +23,16 @@ type TournamentMsg =
     | RoundMsg of Round.State.RoundMsg
     | ResultsMsg of Results.State.ResultsMsg
 
-let getPageModels (t: Tournament) =
-    { Settings = Settings.State.init t
-      Results = Results.State.init t
-      Rounds =
-        Map.ofList (
-            t.Rounds
-            |> List.map (fun r -> r.Number, Round.State.init r.Number t)
-        ) }
-
-let updateStateModels state (t: Tournament) =
+let updateStateModels state =
     { state with
-        Tournament = t
-        PageModels = getPageModels t }
+        PageModels =
+            { Settings = { state.PageModels.Settings with Editable = false }
+              Results = Results.State.init state.Tournament
+              Rounds =
+                Map.ofList (
+                    state.Tournament.Rounds
+                    |> List.map (fun r -> r.Number, Round.State.init r.Number state.Tournament state.PageModels.Settings)
+                ) } }
 
 let init () =
     { Tournament = Tournament.Empty
@@ -49,13 +46,17 @@ let createTournament (settings: Settings.State.SettingsModel) state =
     Tournament.Create(settings.Rounds, (settings.Players |> List.map (fun p -> fst p)))
     >>= pair Shuffle
     |> unwrap
-    |> (fun t -> updateStateModels state t)
+    |> (fun t ->
+        updateStateModels
+            { state with
+                Tournament = t
+                PageModels = { state.PageModels with Settings = settings } })
 
 let private tournamentUpdated fn state =
     state.Tournament
     |> fn
     |> unwrap
-    |> (fun t -> updateStateModels state t)
+    |> (fun t -> updateStateModels { state with Tournament = t })
 
 let private nextRound tournament =
     tournament

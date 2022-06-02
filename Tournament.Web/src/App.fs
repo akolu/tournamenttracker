@@ -47,5 +47,5 @@ let view state dispatch =
 
 Program.mkProgram state update view
 |> Program.withReactSynchronous "elmish-app"
-|> Program.withConsoleTrace
+// |> Program.withConsoleTrace
 |> Program.run

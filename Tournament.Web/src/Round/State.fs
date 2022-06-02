@@ -4,11 +4,11 @@ open Elmish
 open Tournament.Pairing
 open Tournament.Round
 open Tournament.Tournament
-open System
 
 type RoundModel =
     { Round: Round
       Form: Pairing option
+      Tiebreaker: Settings.State.Tiebreaker
       StandingsAcc: (string * Score) list }
 
 type RoundMsg =
@@ -20,8 +20,9 @@ type RoundMsg =
     | StartRound
     | FinishRound
 
-let init num t =
+let init num t (s: Settings.State.SettingsModel) =
     { Round = List.find (fun r -> r.Number = num) t.Rounds
+      Tiebreaker = s.Tiebreaker
       Form = None
       StandingsAcc = t.Standings num }
 

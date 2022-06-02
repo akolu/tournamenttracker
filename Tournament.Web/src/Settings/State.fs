@@ -7,10 +7,15 @@ type ValidationFunction =
     | Players
     | Rounds
 
+type Tiebreaker =
+    | Time = 0
+    | SD = 1
+
 type SettingsModel =
     { Editable: bool
       Rounds: int
       Players: (string * int) list
+      Tiebreaker: Tiebreaker
       ValidationErrors: Map<ValidationFunction, string> }
 
 type SettingsMsg =
@@ -18,6 +23,7 @@ type SettingsMsg =
     | RemoveRounds
     | AddPlayers
     | RemovePlayers
+    | SetTiebreaker of int
     | EditPlayerName of (int * string)
     | Confirm
     | Validate of ValidationFunction
@@ -64,6 +70,7 @@ let init (t: Tournament) =
     { Editable = ((=) t Tournament.Empty)
       Rounds = max 1 t.Rounds.Length
       Players = getPlayers t
+      Tiebreaker = Tiebreaker.Time
       ValidationErrors = Map.empty }
     |> getValidationErrors Players
 
@@ -91,6 +98,7 @@ let update msg model =
             Cmd.ofMsg (Validate Players)
             Cmd.ofMsg (Validate Rounds)
         ]
+    | SetTiebreaker t -> { model with Tiebreaker = enum<Tiebreaker> (t) }, Cmd.none
     | EditPlayerName (index, name) ->
         { model with
             Players =

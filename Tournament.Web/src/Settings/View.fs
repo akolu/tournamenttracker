@@ -5,6 +5,7 @@ open Feliz.Bulma
 open Fable.FontAwesome
 open State
 open Components.IconButton
+open Fable.Core.JsInterop
 
 Fable.Core.JsInterop.importSideEffects "./Styles.scss"
 
@@ -71,6 +72,32 @@ let Settings (state, dispatch) =
                                                 [ prop.onClick (fun _ -> dispatch AddPlayers)
                                                   prop.disabled (not state.Editable) ]
                                             )
+                                        ]
+                                    ]
+                                ]
+                            ]
+                            Html.div [
+                                prop.className "Settings__div--field"
+                                prop.children [
+                                    Bulma.label "Tiebreaker"
+                                    Html.div [
+                                        Bulma.select [
+                                            select.isRounded
+                                            select.isSmall
+                                            prop.value (int state.Tiebreaker)
+                                            prop.disabled (not state.Editable)
+                                            prop.onChange (fun (e: Browser.Types.Event) ->
+                                                dispatch (SetTiebreaker e.target?value))
+                                            prop.children [
+                                                Html.option [
+                                                    prop.text "Time"
+                                                    prop.value (int Tiebreaker.Time)
+                                                ]
+                                                Html.option [
+                                                    prop.text "SD (score)"
+                                                    prop.value (int Tiebreaker.SD)
+                                                ]
+                                            ]
                                         ]
                                     ]
                                 ]
