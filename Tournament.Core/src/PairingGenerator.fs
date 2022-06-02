@@ -34,23 +34,14 @@ module PairingGenerator =
             |> List.sum
 
         players
-        |> List.mapi (fun i p1 ->
-            players
-            |> List.skip i
-            |> List.fold
-                (fun acc p2 ->
-                    match (playersHavePlayed (fst p1) (fst p2)) with
-                    | true -> acc
-                    | false ->
-                        let sorted = List.sortBy (fun (n, s) -> -s.Primary, -s.Secondary, n) [ p1; p2 ]
-                        // TODO: random player1 / player2 instead of having higher-ranking player always player1
-                        acc
-                        @ [ { P1 = sorted.[0]
-                              P2 = sorted.[1]
-                              Priority = (getPriority p1 p2) } ])
-                []
-            |> List.filter (fun pair -> pair.P1 <> pair.P2))
-        |> List.fold (fun acc cur -> acc @ cur) []
+        |> List.allPairs players
+        |> List.filter (fun (a, b) -> a <> b && not (playersHavePlayed (fst a) (fst b)))
+        |> List.map (fun (a, b) ->
+            let sorted = List.sortBy (fun (n, s) -> -s.Primary, -s.Secondary, n) [ a; b ]
+            // TODO: random player1 / player2 instead of having higher-ranking player always player1
+            { P1 = sorted.[0]
+              P2 = sorted.[1]
+              Priority = (getPriority a b) })
         |> List.sortBy (fun pair -> pair.Priority)
 
     let private getNextAvailablePairing
